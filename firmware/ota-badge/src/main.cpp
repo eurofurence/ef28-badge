@@ -3,15 +3,26 @@
 #include <FastLED.h>
 #include <WiFi.h>
 
+#include <EFTouch.h>
+
 #include "constants.h"
 #include "secrets.h"
 
 #define FASTLED_ALL_PINS_HARDWARE_SPI
 #define FASTLED_ESP32_SPI_BUS HSPI
 
+RTC_DATA_ATTR int bootCount = 0;
+
+
+EFTouch touch = EFTouch();
+
+
 CRGB leds[LED_TOTAL_NUM];
 
 uint8_t ledFlipper = 0;
+
+volatile uint8_t boopColorIdx = 0;
+
 
 void resetLeds() {
     fill_solid(leds, LED_TOTAL_NUM, CRGB::Black);
@@ -126,22 +137,87 @@ void setupOTA(const char* password) {
     setLed(LED_OTA_STATUS_IDX, CRGB::Green);
 }
 
+void print_wakeup_reason() {
+  esp_sleep_wakeup_cause_t wakeup_reason;
+
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  switch(wakeup_reason) {
+    case ESP_SLEEP_WAKEUP_EXT0 : USBSerial.println("Wakeup caused by external signal using RTC_IO"); break;
+    case ESP_SLEEP_WAKEUP_EXT1 : USBSerial.println("Wakeup caused by external signal using RTC_CNTL"); break;
+    case ESP_SLEEP_WAKEUP_TIMER : USBSerial.println("Wakeup caused by timer"); break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : USBSerial.println("Wakeup caused by touchpad"); break;
+    case ESP_SLEEP_WAKEUP_ULP : USBSerial.println("Wakeup caused by ULP program"); break;
+    default: USBSerial.printf("Wakeup was not caused by deep sleep: %d\r\n", wakeup_reason); break;
+  }
+}
+
+void isr_noseboop() {
+    boopColorIdx = (boopColorIdx + 1) % 8;
+}
+
 void setup() {
     delay(3000);
     USBSerial.begin(9600);
     delay(3000);
+    USBSerial.print("\r\n\r\n\r\n");
     USBSerial.println("Booting ...");
+    USBSerial.printf("Boot count: %d\r\n", bootCount++);
+    print_wakeup_reason();
 
     setupCpu();
     setupLeds();
     connectToWifi(WIFI_SSID, WIFI_PASSWORD);
     setupOTA(OTA_SECRET);
+
+
+    // Test temporary
+    USBSerial.println("Calibrating EFTouch ...");
+    touch.calibrate();
+    USBSerial.print("  -> Fingerprint: ");
+    USBSerial.println(touch.getFingerprintNoiseLevel());
+    USBSerial.print("  -> Nose: ");
+    USBSerial.println(touch.getNoseNoiseLevel());
+
+    touch.attachInterruptNose(isr_noseboop);
 }
 
+uint8_t deepsleepcounter = 10;
+
 void loop() {
+    // Check for OTA
     ArduinoOTA.handle();
 
-    USBSerial.print(".");
+    // Blink a LED
+    if (ledFlipper == 0) {
+        USBSerial.println(".");
+        deepsleepcounter--;
+    }
     setLed(LED_BREATHE_IDX, ledFlipper++ < 127 ? CRGB::Green : CRGB::Black);
+
+    // Touch LEDs
+    fill_solid(leds + LED_DRAGON_NUM, LED_EF_NUM, CRGB::Black);
+    fill_solid(leds + LED_DRAGON_NUM, touch.readFingerprint(), CRGB::Purple);
+
+    switch (boopColorIdx) {
+        case 0: setLed(LED_EAR_UPPER_IDX, CRGB::Red); break;
+        case 1: setLed(LED_EAR_UPPER_IDX, CRGB::Orange); break;
+        case 2: setLed(LED_EAR_UPPER_IDX, CRGB::Yellow); break;
+        case 3: setLed(LED_EAR_UPPER_IDX, CRGB::Green); break;
+        case 4: setLed(LED_EAR_UPPER_IDX, CRGB::Teal); break;
+        case 5: setLed(LED_EAR_UPPER_IDX, CRGB::Blue); break;
+        case 6: setLed(LED_EAR_UPPER_IDX, CRGB::BlueViolet); break;
+        case 7: setLed(LED_EAR_UPPER_IDX, CRGB::Purple); break;
+    }
+
+    // Wait for next iteration
     delay(10);
+
+    if (deepsleepcounter == 0) {
+        USBSerial.println("Putting the ESP into deep sleep for 3 seconds ...");
+        esp_sleep_enable_timer_wakeup(3000000);
+
+        USBSerial.flush();
+        esp_deep_sleep_start();
+    }
 }
