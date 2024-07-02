@@ -3,6 +3,7 @@
 #include <FastLED.h>
 #include <WiFi.h>
 
+#include <EFPrideFlags.h>
 #include <EFTouch.h>
 
 #include "constants.h"
@@ -183,6 +184,7 @@ void setup() {
 }
 
 uint8_t deepsleepcounter = 10;
+uint8_t flagidx = 0;
 
 void loop() {
     // Check for OTA
@@ -192,12 +194,28 @@ void loop() {
     if (ledFlipper == 0) {
         USBSerial.println(".");
         deepsleepcounter--;
+
+        switch (flagidx) {
+            case 0: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::LGBT, sizeof(CRGB)*LED_EF_NUM); break;
+            case 1: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::LGBTQI, sizeof(CRGB)*LED_EF_NUM); break;
+            case 2: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Bisexual, sizeof(CRGB)*LED_EF_NUM); break;
+            case 3: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Polyamorous, sizeof(CRGB)*LED_EF_NUM); break;
+            case 4: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Polysexual, sizeof(CRGB)*LED_EF_NUM); break;
+            case 5: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Transgender, sizeof(CRGB)*LED_EF_NUM); break;
+            case 6: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Pansexual, sizeof(CRGB)*LED_EF_NUM); break;
+            case 7: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Asexual, sizeof(CRGB)*LED_EF_NUM); break;
+            case 8: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Genderfluid, sizeof(CRGB)*LED_EF_NUM); break;
+            case 9: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Genderqueer, sizeof(CRGB)*LED_EF_NUM); break;
+            case 10: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Nonbinary, sizeof(CRGB)*LED_EF_NUM); break;
+            case 11: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Intersex, sizeof(CRGB)*LED_EF_NUM); break;
+        }
+        flagidx = (flagidx + 1) % 12;
     }
     setLed(LED_BREATHE_IDX, ledFlipper++ < 127 ? CRGB::Green : CRGB::Black);
 
     // Touch LEDs
-    fill_solid(leds + LED_DRAGON_NUM, LED_EF_NUM, CRGB::Black);
-    fill_solid(leds + LED_DRAGON_NUM, touch.readFingerprint(), CRGB::Purple);
+    //fill_solid(leds + LED_DRAGON_NUM, LED_EF_NUM, CRGB::Black);
+    //fill_solid(leds + LED_DRAGON_NUM, touch.readFingerprint(), CRGB::Purple);
 
     switch (boopColorIdx) {
         case 0: setLed(LED_EAR_UPPER_IDX, CRGB::Red); break;
@@ -213,11 +231,11 @@ void loop() {
     // Wait for next iteration
     delay(10);
 
-    if (deepsleepcounter == 0) {
-        USBSerial.println("Putting the ESP into deep sleep for 3 seconds ...");
-        esp_sleep_enable_timer_wakeup(3000000);
-
-        USBSerial.flush();
-        esp_deep_sleep_start();
-    }
+    // if (deepsleepcounter == 0) {
+    //     USBSerial.println("Putting the ESP into deep sleep for 3 seconds ...");
+    //     esp_sleep_enable_timer_wakeup(3000000);
+    // 
+    //     USBSerial.flush();
+    //     esp_deep_sleep_start();
+    // }
 }
