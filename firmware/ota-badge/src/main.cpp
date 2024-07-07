@@ -3,6 +3,7 @@
 #include <FastLED.h>
 #include <WiFi.h>
 
+#include <EFLed.h>
 #include <EFPrideFlags.h>
 #include <EFTouch.h>
 
@@ -15,39 +16,13 @@
 RTC_DATA_ATTR int bootCount = 0;
 
 
-EFTouch touch = EFTouch();
-
-
-CRGB leds[LED_TOTAL_NUM];
+EFLed leds;
+EFTouch touch;
 
 uint8_t ledFlipper = 0;
 
 volatile uint8_t boopColorIdx = 0;
 
-
-void resetLeds() {
-    fill_solid(leds, LED_TOTAL_NUM, CRGB::Black);
-    FastLED.show();
-}
-
-void setLed(uint8_t idx, CRGB color) {
-    leds[idx] = color;
-    FastLED.show();
-}
-
-void setupLeds() {
-    USBSerial.println("Setting up FastLED.");
-    FastLED.addLeds<WS2812B, PIN_LED_DATA, GRB>(leds, LED_TOTAL_NUM);
-    FastLED.setBrightness(30);
-
-    // Enable LED
-    USBSerial.println("Enabling 5V outputs for LEDs.");
-    pinMode(PIN_ENABLE_5VBOOST, OUTPUT);
-    digitalWrite(PIN_ENABLE_5VBOOST, HIGH);
-    delay(100);
-
-    resetLeds();
-}
 
 void setupCpu() {
     USBSerial.print("Initial CPU frequency: ");
@@ -62,7 +37,7 @@ void connectToWifi(const char* ssid, const char* password) {
     USBSerial.print("Connecting to WiFi network: ");
     USBSerial.print(ssid);
     USBSerial.print(" ");
-    setLed(LED_WIFI_STATUS_IDX, CRGB::Red);
+    leds.setDragonNose(CRGB::Red);
 
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
@@ -78,11 +53,11 @@ void connectToWifi(const char* ssid, const char* password) {
     USBSerial.println(WiFi.macAddress());
     USBSerial.println();
 
-    setLed(LED_WIFI_STATUS_IDX, CRGB::Green);
+    leds.setDragonNose(CRGB::Green);
 }
 
 void setupOTA(const char* password) {
-    setLed(LED_OTA_STATUS_IDX, CRGB::Yellow);
+    leds.setDragonMuzzle(CRGB::Yellow);
     USBSerial.println("Initializing OTA ... ");
 
     if (password) {
@@ -100,27 +75,27 @@ void setupOTA(const char* password) {
 
             // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
             USBSerial.println("Start updating " + type);
-            setLed(LED_OTA_STATUS_IDX, CRGB::Blue);
+            leds.setDragonMuzzle(CRGB::Blue);
         })
         .onEnd([]() {
             USBSerial.println("\nEnd");
             for (uint8_t i = 0; i < 3; i++) {
-                setLed(LED_OTA_STATUS_IDX, CRGB::Green);
+                leds.setDragonMuzzle(CRGB::Green);
                 delay(500);
-                setLed(LED_OTA_STATUS_IDX, CRGB::Black);
+                leds.setDragonMuzzle(CRGB::Black);
                 delay(500);
             }
-            resetLeds();
+            leds.clear();
         })
         .onProgress([](unsigned int progress, unsigned int total) {
             USBSerial.printf("Progress: %u%%\r", (progress / (total / 100)));
         })
         .onError([](ota_error_t error) {
             USBSerial.printf("Error[%u]: ", error);
-            setLed(LED_OTA_STATUS_IDX, CRGB::Red);
+            leds.setDragonMuzzle(CRGB::Red);
             if (error == OTA_AUTH_ERROR) {
                 USBSerial.println("Auth Failed");
-                setLed(LED_OTA_STATUS_IDX, CRGB::Purple);
+                leds.setDragonMuzzle(CRGB::Purple);
             } else if (error == OTA_BEGIN_ERROR) {
                 USBSerial.println("Begin Failed");
             } else if (error == OTA_CONNECT_ERROR) {
@@ -135,7 +110,7 @@ void setupOTA(const char* password) {
     ArduinoOTA.begin();
 
     USBSerial.println("Done.");
-    setLed(LED_OTA_STATUS_IDX, CRGB::Green);
+    leds.setDragonMuzzle(CRGB::Green);
 }
 
 void print_wakeup_reason() {
@@ -167,12 +142,13 @@ void setup() {
     print_wakeup_reason();
 
     setupCpu();
-    setupLeds();
+    leds = EFLed(32);
+    leds.clear();
     connectToWifi(WIFI_SSID, WIFI_PASSWORD);
     setupOTA(OTA_SECRET);
 
-
     // Test temporary
+    touch = EFTouch();
     USBSerial.println("Calibrating EFTouch ...");
     touch.calibrate();
     USBSerial.print("  -> Fingerprint: ");
@@ -185,6 +161,7 @@ void setup() {
 
 uint8_t deepsleepcounter = 10;
 uint8_t flagidx = 0;
+uint32_t brightness = 0;
 
 void loop() {
     // Check for OTA
@@ -196,37 +173,54 @@ void loop() {
         deepsleepcounter--;
 
         switch (flagidx) {
-            case 0: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::LGBT, sizeof(CRGB)*LED_EF_NUM); break;
-            case 1: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::LGBTQI, sizeof(CRGB)*LED_EF_NUM); break;
-            case 2: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Bisexual, sizeof(CRGB)*LED_EF_NUM); break;
-            case 3: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Polyamorous, sizeof(CRGB)*LED_EF_NUM); break;
-            case 4: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Polysexual, sizeof(CRGB)*LED_EF_NUM); break;
-            case 5: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Transgender, sizeof(CRGB)*LED_EF_NUM); break;
-            case 6: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Pansexual, sizeof(CRGB)*LED_EF_NUM); break;
-            case 7: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Asexual, sizeof(CRGB)*LED_EF_NUM); break;
-            case 8: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Genderfluid, sizeof(CRGB)*LED_EF_NUM); break;
-            case 9: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Genderqueer, sizeof(CRGB)*LED_EF_NUM); break;
-            case 10: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Nonbinary, sizeof(CRGB)*LED_EF_NUM); break;
-            case 11: memcpy(leds + LED_EF_OFFSET, EFPrideFlags::Intersex, sizeof(CRGB)*LED_EF_NUM); break;
+            case 0: leds.setEFBar(EFPrideFlags::LGBT); break;
+            case 1: leds.setEFBar(EFPrideFlags::LGBTQI); break;
+            case 2: leds.setEFBar(EFPrideFlags::Bisexual); break;
+            case 3: leds.setEFBar(EFPrideFlags::Polyamorous); break;
+            case 4: leds.setEFBar(EFPrideFlags::Polysexual); break;
+            case 5: leds.setEFBar(EFPrideFlags::Transgender); break;
+            case 6: leds.setEFBar(EFPrideFlags::Pansexual); break;
+            case 7: leds.setEFBar(EFPrideFlags::Asexual); break;
+            case 8: leds.setEFBar(EFPrideFlags::Genderfluid); break;
+            case 9: leds.setEFBar(EFPrideFlags::Genderqueer); break;
+            case 10: leds.setEFBar(EFPrideFlags::Nonbinary); break;
+            case 11: leds.setEFBar(EFPrideFlags::Intersex); break;
         }
         flagidx = (flagidx + 1) % 12;
     }
-    setLed(LED_BREATHE_IDX, ledFlipper++ < 127 ? CRGB::Green : CRGB::Black);
+    leds.setDragonEye(ledFlipper++ < 127 ? CRGB::Green : CRGB::Black);
 
     // Touch LEDs
-    //fill_solid(leds + LED_DRAGON_NUM, LED_EF_NUM, CRGB::Black);
-    //fill_solid(leds + LED_DRAGON_NUM, touch.readFingerprint(), CRGB::Purple);
+    uint8_t touchy = touch.readFingerprint();
+    if (touchy) {
+        for (uint8_t i = 0; i < EFLED_EFBAR_NUM; i++) {
+            if (touchy) {
+                leds.setEFBar(i , CRGB::Purple);
+                touchy--;
+            } else {
+                leds.setEFBar(i, CRGB::Black);
+            }
+        }
+    }
 
     switch (boopColorIdx) {
-        case 0: setLed(LED_EAR_UPPER_IDX, CRGB::Red); break;
-        case 1: setLed(LED_EAR_UPPER_IDX, CRGB::Orange); break;
-        case 2: setLed(LED_EAR_UPPER_IDX, CRGB::Yellow); break;
-        case 3: setLed(LED_EAR_UPPER_IDX, CRGB::Green); break;
-        case 4: setLed(LED_EAR_UPPER_IDX, CRGB::Teal); break;
-        case 5: setLed(LED_EAR_UPPER_IDX, CRGB::Blue); break;
-        case 6: setLed(LED_EAR_UPPER_IDX, CRGB::BlueViolet); break;
-        case 7: setLed(LED_EAR_UPPER_IDX, CRGB::Purple); break;
+        case 0: leds.setDragonEarTop(CRGB::Red); break;
+        case 1: leds.setDragonEarTop(CRGB::Orange); break;
+        case 2: leds.setDragonEarTop(CRGB::Yellow); break;
+        case 3: leds.setDragonEarTop(CRGB::Green); break;
+        case 4: leds.setDragonEarTop(CRGB::Teal); break;
+        case 5: leds.setDragonEarTop(CRGB::Blue); break;
+        case 6: leds.setDragonEarTop(CRGB::BlueViolet); break;
+        case 7: leds.setDragonEarTop(CRGB::Purple); break;
     }
+
+    uint8_t newbrightness = (brightness % 202) < 101 ? brightness % 101 : 100 - (brightness % 101);
+    // USBSerial.print("Set brightness = ");
+    // USBSerial.print(newbrightness);
+    leds.setBrightness(newbrightness);
+    // USBSerial.print("     -> read ");
+    // USBSerial.println(leds.getBrightness());
+    brightness++;
 
     // Wait for next iteration
     delay(10);

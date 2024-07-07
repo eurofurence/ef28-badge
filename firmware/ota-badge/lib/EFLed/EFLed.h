@@ -1,0 +1,147 @@
+#ifndef EFLED_H_
+#define EFLED_H_
+
+#include <FastLED.h>
+
+#define EFLED_PIN_LED_DATA 21
+#define EFLED_PIN_5VBOOST_ENABLE 9
+
+#define EFLED_MAX_BRIGHTNESS_DEFAULT 50
+
+#define EFLED_TOTAL_NUM 17
+#define EFLED_DRAGON_NUM 6
+#define EFLED_EFBAR_NUM 11
+
+#define EFLED_DARGON_OFFSET 0
+#define EFLED_EFBAR_OFFSET 6
+
+#define EFLED_DRAGON_NOSE_IDX 0
+#define EFLED_DRAGON_MUZZLE_IDX 1
+#define EFLED_DRAGON_EYE_IDX 2
+#define EFLED_DRAGON_CHEEK_IDX 3
+#define EFLED_DRAGON_EAR_BOTTOM_IDX 4
+#define EFLED_DRAGON_EAR_TOP_IDX 5
+
+
+class EFLed {
+
+    protected:
+
+        static CRGB led_data[EFLED_TOTAL_NUM];  //!< Internal LED data structure
+        uint8_t max_brightness;  //!< Maximum raw brightness (0-255)
+
+
+    public:
+
+        /**
+         * @brief Constructs a new EFLed instance. Automatically initializes
+         * power circuit and FastLED library.
+         */
+        EFLed();
+
+        /**
+         * @brief Constructs a new EFLed instance. Automatically initializes
+         * power circuit and FastLED library.
+         * 
+         * @param max_brightness Maximum raw brightness (0-255) the LEDs will
+         * be allowed to be set to.
+         */
+        EFLed(const uint8_t max_brightness);
+
+        /**
+         * @brief Enables the +5V power domain
+         */
+        void enablePower();
+
+        /**
+         * @brief Disabled the +5V power domain
+         */
+        void disablePower();
+
+        /**
+         * @brief Disables all LEDs
+         */
+        void clear();
+
+        /**
+         * @brief Sets the global brightness for all LEDs
+         * 
+         * @param brightness Value between 0 (off) and 100 (high)
+         */
+        void setBrightness(const uint8_t brightness);
+
+        /**
+         * @brief Retrieves the current global brightness value
+         * 
+         * @return Value between 0 (off) and 100 (high)
+         */
+        uint8_t getBrightness();
+
+        /**
+         * @brief Sets the dragons nose LED to the given color
+         * 
+         * @param color Color to set
+         */
+        void setDragonNose(const CRGB color);
+
+        /**
+         * @brief Sets the dragons muzzle LED to the given color
+         * 
+         * @param color Color to set
+         */
+        void setDragonMuzzle(const CRGB color);
+
+        /**
+         * @brief Sets the dragons eye LED to the given color
+         * 
+         * @param color Color to set
+         */
+        void setDragonEye(const CRGB color);
+
+        /**
+         * @brief Sets the dragons cheek LED to the given color
+         * 
+         * @param color Color to set
+         */
+        void setDragonCheek(const CRGB color);
+
+        /**
+         * @brief Sets the dragons bottom ear LED to the given color
+         * 
+         * @param color Color to set
+         */
+        void setDragonEarBottom(const CRGB color);
+
+        /**
+         * @brief Sets the dragons top ear LED to the given color
+         * 
+         * @param color Color to set
+         */
+        void setDragonEarTop(const CRGB color);
+
+        /**
+         * @brief Sets all of the dragon LEDs to the given colors
+         * 
+         * @param color Array of colors to set
+         */
+        void setDragon(const CRGB color[EFLED_DRAGON_NUM]);
+
+        /**
+         * @brief Sets all of the EF bar LEDs to the given colors
+         * 
+         * @param color Array of colors to set
+         */
+        void setEFBar(const CRGB color[EFLED_EFBAR_NUM]);
+
+        /**
+         * @brief Sets one of the EF bar LEDs to the given color
+         * 
+         * @param idx Number of the led to set (from top to bottom)
+         * @param color Color to set
+         */
+        void setEFBar(uint8_t idx, const CRGB color);
+
+};
+
+#endif /* EFLED_H_ */
+

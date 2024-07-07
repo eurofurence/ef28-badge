@@ -1,17 +1,12 @@
-#include <EFTouch.h>
+#include "EFTouch.h"
+
+
+EFTouch::EFTouch(): EFTouch(10000, EFTOUCH_PIN_TOUCH_FINGERPRINT, EFTOUCH_PIN_TOUCH_NOSE) {}
 
 EFTouch::EFTouch(touch_value_t detection_step, uint8_t pin_fingerprint, uint8_t pin_nose) {
     this->detection_step = detection_step;
     this->pin_fingerprint = pin_fingerprint;
     this->pin_nose = pin_nose;
-
-    this->calibrate();
-}
-
-EFTouch::EFTouch() {
-    this->detection_step = 10000;
-    this->pin_fingerprint = EFTOUCH_PIN_TOUCH_FINGERPRINT;
-    this->pin_nose = EFTOUCH_PIN_TOUCH_NOSE;
 
     this->calibrate();
 }
