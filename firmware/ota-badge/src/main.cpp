@@ -3,6 +3,7 @@
 #include <FastLED.h>
 #include <WiFi.h>
 
+#include <EFLogging.h>
 #include <EFLed.h>
 #include <EFPrideFlags.h>
 #include <EFTouch.h>
@@ -25,40 +26,32 @@ volatile uint8_t boopColorIdx = 0;
 
 
 void setupCpu() {
-    USBSerial.print("Initial CPU frequency: ");
-    USBSerial.println(getCpuFrequencyMhz());
-
+    LOG_INFO(("Initial CPU frequency: " + String(getCpuFrequencyMhz())).c_str());
     setCpuFrequencyMhz(80);
-    USBSerial.print("Set CPU frequency to: ");
-    USBSerial.println(getCpuFrequencyMhz());
+    LOG_INFO(("Set CPU frequency to: " + String(getCpuFrequencyMhz())).c_str());
 }
 
 void connectToWifi(const char* ssid, const char* password) {
-    USBSerial.print("Connecting to WiFi network: ");
-    USBSerial.print(ssid);
-    USBSerial.print(" ");
+    LOG_INFO(("Connecting to WiFi network: " + String(ssid)).c_str());
     leds.setDragonNose(CRGB::Red);
 
     WiFi.begin(ssid, password);
+    WiFi.setSleep(true);
     while (WiFi.status() != WL_CONNECTED) {
-        USBSerial.print(".");
+        LOG_INFO(".");
         delay(200);
     }
-    USBSerial.println(" Connected!");
+    LOG_INFO("Connected!");
 
-    USBSerial.println();
-    USBSerial.print("IP address: ");
-    USBSerial.println(WiFi.localIP());
-    USBSerial.print("MAC address: ");
-    USBSerial.println(WiFi.macAddress());
-    USBSerial.println();
+    LOG_INFO(("IP address: " + WiFi.localIP().toString()).c_str());
+    LOG_INFO(("MAC address: " + WiFi.macAddress()).c_str());
 
     leds.setDragonNose(CRGB::Green);
 }
 
 void setupOTA(const char* password) {
     leds.setDragonMuzzle(CRGB::Yellow);
-    USBSerial.println("Initializing OTA ... ");
+    LOG_INFO("Initializing OTA ... ");
 
     if (password) {
         ArduinoOTA.setPassword(password);
@@ -74,11 +67,11 @@ void setupOTA(const char* password) {
             }
 
             // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-            USBSerial.println("Start updating " + type);
+            LOG_INFO("Start updating " + type);
             leds.setDragonMuzzle(CRGB::Blue);
         })
         .onEnd([]() {
-            USBSerial.println("\nEnd");
+            LOG_INFO("\nEnd");
             for (uint8_t i = 0; i < 3; i++) {
                 leds.setDragonMuzzle(CRGB::Green);
                 delay(500);
@@ -88,28 +81,28 @@ void setupOTA(const char* password) {
             leds.clear();
         })
         .onProgress([](unsigned int progress, unsigned int total) {
-            USBSerial.printf("Progress: %u%%\r", (progress / (total / 100)));
+            LOGF_INFO("Progress: %u%%\r", (progress / (total / 100)));
         })
         .onError([](ota_error_t error) {
-            USBSerial.printf("Error[%u]: ", error);
+            LOGF_ERROR("Error[%u]: ", error);
             leds.setDragonMuzzle(CRGB::Red);
             if (error == OTA_AUTH_ERROR) {
-                USBSerial.println("Auth Failed");
+                LOG_WARNING("Auth Failed");
                 leds.setDragonMuzzle(CRGB::Purple);
             } else if (error == OTA_BEGIN_ERROR) {
-                USBSerial.println("Begin Failed");
+                LOG_ERROR("Begin Failed");
             } else if (error == OTA_CONNECT_ERROR) {
-                USBSerial.println("Connect Failed");
+                LOG_ERROR("Connect Failed");
             } else if (error == OTA_RECEIVE_ERROR) {
-                USBSerial.println("Receive Failed");
+                LOG_ERROR("Receive Failed");
             } else if (error == OTA_END_ERROR) {
-                USBSerial.println("End Failed");
+                LOG_ERROR("End Failed");
             }
         });
 
     ArduinoOTA.begin();
 
-    USBSerial.println("Done.");
+    LOG_INFO("Done.");
     leds.setDragonMuzzle(CRGB::Green);
 }
 
@@ -119,12 +112,12 @@ void print_wakeup_reason() {
   wakeup_reason = esp_sleep_get_wakeup_cause();
 
   switch(wakeup_reason) {
-    case ESP_SLEEP_WAKEUP_EXT0 : USBSerial.println("Wakeup caused by external signal using RTC_IO"); break;
-    case ESP_SLEEP_WAKEUP_EXT1 : USBSerial.println("Wakeup caused by external signal using RTC_CNTL"); break;
-    case ESP_SLEEP_WAKEUP_TIMER : USBSerial.println("Wakeup caused by timer"); break;
-    case ESP_SLEEP_WAKEUP_TOUCHPAD : USBSerial.println("Wakeup caused by touchpad"); break;
-    case ESP_SLEEP_WAKEUP_ULP : USBSerial.println("Wakeup caused by ULP program"); break;
-    default: USBSerial.printf("Wakeup was not caused by deep sleep: %d\r\n", wakeup_reason); break;
+    case ESP_SLEEP_WAKEUP_EXT0 : LOG_DEBUG("Wakeup caused by external signal using RTC_IO"); break;
+    case ESP_SLEEP_WAKEUP_EXT1 : LOG_DEBUG("Wakeup caused by external signal using RTC_CNTL"); break;
+    case ESP_SLEEP_WAKEUP_TIMER : LOG_DEBUG("Wakeup caused by timer"); break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : LOG_DEBUG("Wakeup caused by touchpad"); break;
+    case ESP_SLEEP_WAKEUP_ULP : LOG_DEBUG("Wakeup caused by ULP program"); break;
+    default: LOGF_DEBUG("Wakeup was not caused by deep sleep: %d\r\n", wakeup_reason); break;
   }
 }
 
@@ -136,26 +129,19 @@ void setup() {
     delay(3000);
     USBSerial.begin(9600);
     delay(3000);
-    USBSerial.print("\r\n\r\n\r\n");
-    USBSerial.println("Booting ...");
-    USBSerial.printf("Boot count: %d\r\n", bootCount++);
+    LOG_INFO("Booting ...");
+    LOGF_DEBUG("Boot count: %d\r\n", bootCount++);
     print_wakeup_reason();
 
     setupCpu();
-    leds = EFLed(32);
+    leds = EFLed(20);
     leds.clear();
     connectToWifi(WIFI_SSID, WIFI_PASSWORD);
     setupOTA(OTA_SECRET);
 
-    // Test temporary
+    // Touchy stuffy
     touch = EFTouch();
-    USBSerial.println("Calibrating EFTouch ...");
     touch.calibrate();
-    USBSerial.print("  -> Fingerprint: ");
-    USBSerial.println(touch.getFingerprintNoiseLevel());
-    USBSerial.print("  -> Nose: ");
-    USBSerial.println(touch.getNoseNoiseLevel());
-
     touch.attachInterruptNose(isr_noseboop);
 }
 
@@ -169,7 +155,7 @@ void loop() {
 
     // Blink a LED
     if (ledFlipper == 0) {
-        USBSerial.println(".");
+        LOG_DEBUG(".");
         deepsleepcounter--;
 
         switch (flagidx) {

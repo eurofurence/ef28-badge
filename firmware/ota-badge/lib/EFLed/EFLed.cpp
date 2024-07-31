@@ -27,6 +27,8 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
+#include <EFLogging.h>
+
 #include "EFLed.h"
 
 CRGB EFLed::led_data[EFLED_TOTAL_NUM];
@@ -39,9 +41,11 @@ EFLed::EFLed(uint8_t max_brightness) {
     for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
         this->led_data[i] = CRGB::Black;
     }
+    LOGF_INFO("(EFLed) Creating new EFLed instance with max_brightness=%d\r\n", max_brightness);
 
     FastLED.clearData();
     FastLED.addLeds<WS2812B, EFLED_PIN_LED_DATA, GRB>(this->led_data, EFLED_TOTAL_NUM);
+    LOGF_DEBUG("(EFLed) Added new WS2812B: %d LEDs @ PIN %d\r\n", EFLED_TOTAL_NUM, EFLED_PIN_LED_DATA);
     FastLED.setBrightness(this->max_brightness);
 
     this->enablePower();
@@ -50,11 +54,13 @@ EFLed::EFLed(uint8_t max_brightness) {
 void EFLed::enablePower() {
     pinMode(EFLED_PIN_5VBOOST_ENABLE, OUTPUT);
     digitalWrite(EFLED_PIN_5VBOOST_ENABLE, HIGH);
+    LOG_INFO("(EFLed) Enabled +5V boost converter");
     delay(10);
 }
 
 void EFLed::disablePower() {
     digitalWrite(EFLED_PIN_5VBOOST_ENABLE, LOW);
+    LOG_INFO("(EFLed) Disabled +5V boost converter");
     delay(10);
 }
 

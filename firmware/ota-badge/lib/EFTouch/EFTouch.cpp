@@ -24,6 +24,8 @@
  * @author Honigeintopf
  */
 
+#include <EFLogging.h>
+
 #include "EFTouch.h"
 
 
@@ -33,6 +35,9 @@ EFTouch::EFTouch(touch_value_t detection_step, uint8_t pin_fingerprint, uint8_t 
     this->detection_step = detection_step;
     this->pin_fingerprint = pin_fingerprint;
     this->pin_nose = pin_nose;
+
+    LOGF_INFO("(EFTouch) Creating new EFTouch instance with detection_step=%d\r\n", detection_step);
+    LOGF_DEBUG("(EFTouch) Registered: pin_fingerprint=%d pin_nose=%d\r\n", pin_fingerprint, pin_nose);
 
     this->calibrate();
 }
@@ -49,12 +54,14 @@ void EFTouch::calibrate() {
         reading = touchRead(this->pin_fingerprint);
         if (reading > this->noise_fingerprint) {
             this->noise_fingerprint = reading;
+            LOGF_INFO("(EFTouch) Calibrated fingerprint noise floor to: %d\r\n", this->noise_fingerprint);
         }
 
         // Nose
         reading = touchRead(this->pin_nose);
         if (reading > this->noise_nose) {
             this->noise_nose = reading;
+            LOGF_INFO("(EFTouch) Calibrated nose noise floor to: %d\r\n", this->noise_nose);
         }
     }
 }
@@ -101,6 +108,7 @@ void EFTouch::attachInterruptFingerprint(void (*isr)(void)) {
         isr,
         this->detection_step
     );
+    LOG_DEBUG("(EFTouch) Attached fingerprint ISR");
 }
 
 void EFTouch::attachInterruptNose(void (*isr)(void)) {
@@ -109,4 +117,5 @@ void EFTouch::attachInterruptNose(void (*isr)(void)) {
         isr,
          this->detection_step
     );
+    LOG_DEBUG("(EFTouch) Attached nose ISR");
 }
