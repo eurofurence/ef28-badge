@@ -29,20 +29,31 @@
 #include "EFTouch.h"
 
 
-EFTouch::EFTouch(): EFTouch(10000, EFTOUCH_PIN_TOUCH_FINGERPRINT, EFTOUCH_PIN_TOUCH_NOSE) {}
+EFTouchClass::EFTouchClass()
+: pin_fingerprint(EFTOUCH_PIN_TOUCH_FINGERPRINT)
+, pin_nose(EFTOUCH_PIN_TOUCH_FINGERPRINT)
+, detection_step(10000)
+, noise_fingerprint(0)
+, noise_nose(0)
+{
+}
 
-EFTouch::EFTouch(touch_value_t detection_step, uint8_t pin_fingerprint, uint8_t pin_nose) {
+void EFTouchClass::init() {
+    this->init(10000, EFTOUCH_PIN_TOUCH_FINGERPRINT, EFTOUCH_PIN_TOUCH_NOSE);
+}
+
+void EFTouchClass::init(touch_value_t detection_step, uint8_t pin_fingerprint, uint8_t pin_nose) {
     this->detection_step = detection_step;
     this->pin_fingerprint = pin_fingerprint;
     this->pin_nose = pin_nose;
 
-    LOGF_INFO("(EFTouch) Creating new EFTouch instance with detection_step=%d\r\n", detection_step);
+    LOGF_INFO("(EFTouch) Initialized EFTouch instance with detection_step=%d\r\n", detection_step);
     LOGF_DEBUG("(EFTouch) Registered: pin_fingerprint=%d pin_nose=%d\r\n", pin_fingerprint, pin_nose);
 
     this->calibrate();
 }
 
-void EFTouch::calibrate() {
+void EFTouchClass::calibrate() {
     // Reset calibration values
     this->noise_fingerprint = 0;
     this->noise_nose = 0;
@@ -66,23 +77,23 @@ void EFTouch::calibrate() {
     }
 }
 
-touch_value_t EFTouch::getFingerprintNoiseLevel() {
+touch_value_t EFTouchClass::getFingerprintNoiseLevel() {
     return this->noise_fingerprint;
 }
 
-touch_value_t EFTouch::getNoseNoiseLevel() {
+touch_value_t EFTouchClass::getNoseNoiseLevel() {
     return this->noise_nose;
 }
 
-bool EFTouch::isFingerprintTouched() {
+bool EFTouchClass::isFingerprintTouched() {
     return touchRead(this->pin_fingerprint) > this->noise_fingerprint + this->detection_step;
 }
 
-bool EFTouch::isNoseTouched() {
+bool EFTouchClass::isNoseTouched() {
     return touchRead(this->pin_nose) > this->noise_nose + this->detection_step;
 }
 
-uint8_t EFTouch::readFingerprint() {
+uint8_t EFTouchClass::readFingerprint() {
     touch_value_t reading = touchRead(this->pin_fingerprint); 
 
     if (reading < this->noise_fingerprint + this->detection_step) {
@@ -92,7 +103,7 @@ uint8_t EFTouch::readFingerprint() {
     }
 }
 
-uint8_t EFTouch::readNose() {
+uint8_t EFTouchClass::readNose() {
     touch_value_t reading = touchRead(this->pin_nose); 
 
     if (reading < this->noise_nose + this->detection_step) {
@@ -102,7 +113,7 @@ uint8_t EFTouch::readNose() {
     }
 }
 
-void EFTouch::attachInterruptFingerprint(void (*isr)(void)) {
+void EFTouchClass::attachInterruptFingerprint(void (*isr)(void)) {
     touchAttachInterrupt(
         this->pin_fingerprint,
         isr,
@@ -111,7 +122,7 @@ void EFTouch::attachInterruptFingerprint(void (*isr)(void)) {
     LOG_DEBUG("(EFTouch) Attached fingerprint ISR");
 }
 
-void EFTouch::attachInterruptNose(void (*isr)(void)) {
+void EFTouchClass::attachInterruptNose(void (*isr)(void)) {
     touchAttachInterrupt(
         this->pin_nose,
         isr,
@@ -119,3 +130,7 @@ void EFTouch::attachInterruptNose(void (*isr)(void)) {
     );
     LOG_DEBUG("(EFTouch) Attached nose ISR");
 }
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFTOUCH)
+EFTouchClass EFTouch;
+#endif

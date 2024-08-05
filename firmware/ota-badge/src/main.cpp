@@ -17,9 +17,6 @@
 RTC_DATA_ATTR int bootCount = 0;
 
 
-EFLed leds;
-EFTouch touch;
-
 uint8_t ledFlipper = 0;
 
 volatile uint8_t boopColorIdx = 0;
@@ -33,7 +30,7 @@ void setupCpu() {
 
 void connectToWifi(const char* ssid, const char* password) {
     LOG_INFO(("Connecting to WiFi network: " + String(ssid)).c_str());
-    leds.setDragonNose(CRGB::Red);
+    EFLed.setDragonNose(CRGB::Red);
 
     WiFi.begin(ssid, password);
     WiFi.setSleep(true);
@@ -46,11 +43,11 @@ void connectToWifi(const char* ssid, const char* password) {
     LOG_INFO(("IP address: " + WiFi.localIP().toString()).c_str());
     LOG_INFO(("MAC address: " + WiFi.macAddress()).c_str());
 
-    leds.setDragonNose(CRGB::Green);
+    EFLed.setDragonNose(CRGB::Green);
 }
 
 void setupOTA(const char* password) {
-    leds.setDragonMuzzle(CRGB::Yellow);
+    EFLed.setDragonMuzzle(CRGB::Yellow);
     LOG_INFO("Initializing OTA ... ");
 
     if (password) {
@@ -68,27 +65,27 @@ void setupOTA(const char* password) {
 
             // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
             LOG_INFO("Start updating " + type);
-            leds.setDragonMuzzle(CRGB::Blue);
+            EFLed.setDragonMuzzle(CRGB::Blue);
         })
         .onEnd([]() {
             LOG_INFO("\nEnd");
             for (uint8_t i = 0; i < 3; i++) {
-                leds.setDragonMuzzle(CRGB::Green);
+                EFLed.setDragonMuzzle(CRGB::Green);
                 delay(500);
-                leds.setDragonMuzzle(CRGB::Black);
+                EFLed.setDragonMuzzle(CRGB::Black);
                 delay(500);
             }
-            leds.clear();
+            EFLed.clear();
         })
         .onProgress([](unsigned int progress, unsigned int total) {
             LOGF_INFO("Progress: %u%%\r", (progress / (total / 100)));
         })
         .onError([](ota_error_t error) {
             LOGF_ERROR("Error[%u]: ", error);
-            leds.setDragonMuzzle(CRGB::Red);
+            EFLed.setDragonMuzzle(CRGB::Red);
             if (error == OTA_AUTH_ERROR) {
                 LOG_WARNING("Auth Failed");
-                leds.setDragonMuzzle(CRGB::Purple);
+                EFLed.setDragonMuzzle(CRGB::Purple);
             } else if (error == OTA_BEGIN_ERROR) {
                 LOG_ERROR("Begin Failed");
             } else if (error == OTA_CONNECT_ERROR) {
@@ -103,7 +100,7 @@ void setupOTA(const char* password) {
     ArduinoOTA.begin();
 
     LOG_INFO("Done.");
-    leds.setDragonMuzzle(CRGB::Green);
+    EFLed.setDragonMuzzle(CRGB::Green);
 }
 
 void print_wakeup_reason() {
@@ -134,15 +131,14 @@ void setup() {
     print_wakeup_reason();
 
     setupCpu();
-    leds = EFLed(20);
-    leds.clear();
+    EFLed.init(20);
+    EFLed.clear();
     connectToWifi(WIFI_SSID, WIFI_PASSWORD);
     setupOTA(OTA_SECRET);
 
     // Touchy stuffy
-    touch = EFTouch();
-    touch.calibrate();
-    touch.attachInterruptNose(isr_noseboop);
+    EFTouch.init();
+    EFTouch.attachInterruptNose(isr_noseboop);
 }
 
 uint8_t deepsleepcounter = 10;
@@ -159,51 +155,51 @@ void loop() {
         deepsleepcounter--;
 
         switch (flagidx) {
-            case 0: leds.setEFBar(EFPrideFlags::LGBT); break;
-            case 1: leds.setEFBar(EFPrideFlags::LGBTQI); break;
-            case 2: leds.setEFBar(EFPrideFlags::Bisexual); break;
-            case 3: leds.setEFBar(EFPrideFlags::Polyamorous); break;
-            case 4: leds.setEFBar(EFPrideFlags::Polysexual); break;
-            case 5: leds.setEFBar(EFPrideFlags::Transgender); break;
-            case 6: leds.setEFBar(EFPrideFlags::Pansexual); break;
-            case 7: leds.setEFBar(EFPrideFlags::Asexual); break;
-            case 8: leds.setEFBar(EFPrideFlags::Genderfluid); break;
-            case 9: leds.setEFBar(EFPrideFlags::Genderqueer); break;
-            case 10: leds.setEFBar(EFPrideFlags::Nonbinary); break;
-            case 11: leds.setEFBar(EFPrideFlags::Intersex); break;
+            case 0: EFLed.setEFBar(EFPrideFlags::LGBT); break;
+            case 1: EFLed.setEFBar(EFPrideFlags::LGBTQI); break;
+            case 2: EFLed.setEFBar(EFPrideFlags::Bisexual); break;
+            case 3: EFLed.setEFBar(EFPrideFlags::Polyamorous); break;
+            case 4: EFLed.setEFBar(EFPrideFlags::Polysexual); break;
+            case 5: EFLed.setEFBar(EFPrideFlags::Transgender); break;
+            case 6: EFLed.setEFBar(EFPrideFlags::Pansexual); break;
+            case 7: EFLed.setEFBar(EFPrideFlags::Asexual); break;
+            case 8: EFLed.setEFBar(EFPrideFlags::Genderfluid); break;
+            case 9: EFLed.setEFBar(EFPrideFlags::Genderqueer); break;
+            case 10: EFLed.setEFBar(EFPrideFlags::Nonbinary); break;
+            case 11: EFLed.setEFBar(EFPrideFlags::Intersex); break;
         }
         flagidx = (flagidx + 1) % 12;
     }
-    leds.setDragonEye(ledFlipper++ < 127 ? CRGB::Green : CRGB::Black);
+    EFLed.setDragonEye(ledFlipper++ < 127 ? CRGB::Green : CRGB::Black);
 
     // Touch LEDs
-    uint8_t touchy = touch.readFingerprint();
+    uint8_t touchy = EFTouch.readFingerprint();
     if (touchy) {
         for (uint8_t i = 0; i < EFLED_EFBAR_NUM; i++) {
             if (touchy) {
-                leds.setEFBar(i , CRGB::Purple);
+                EFLed.setEFBar(i , CRGB::Purple);
                 touchy--;
             } else {
-                leds.setEFBar(i, CRGB::Black);
+                EFLed.setEFBar(i, CRGB::Black);
             }
         }
     }
 
     switch (boopColorIdx) {
-        case 0: leds.setDragonEarTop(CRGB::Red); break;
-        case 1: leds.setDragonEarTop(CRGB::Orange); break;
-        case 2: leds.setDragonEarTop(CRGB::Yellow); break;
-        case 3: leds.setDragonEarTop(CRGB::Green); break;
-        case 4: leds.setDragonEarTop(CRGB::Teal); break;
-        case 5: leds.setDragonEarTop(CRGB::Blue); break;
-        case 6: leds.setDragonEarTop(CRGB::BlueViolet); break;
-        case 7: leds.setDragonEarTop(CRGB::Purple); break;
+        case 0: EFLed.setDragonEarTop(CRGB::Red); break;
+        case 1: EFLed.setDragonEarTop(CRGB::Orange); break;
+        case 2: EFLed.setDragonEarTop(CRGB::Yellow); break;
+        case 3: EFLed.setDragonEarTop(CRGB::Green); break;
+        case 4: EFLed.setDragonEarTop(CRGB::Teal); break;
+        case 5: EFLed.setDragonEarTop(CRGB::Blue); break;
+        case 6: EFLed.setDragonEarTop(CRGB::BlueViolet); break;
+        case 7: EFLed.setDragonEarTop(CRGB::Purple); break;
     }
 
     uint8_t newbrightness = (brightness % 202) < 101 ? brightness % 101 : 100 - (brightness % 101);
     // USBSerial.print("Set brightness = ");
     // USBSerial.print(newbrightness);
-    leds.setBrightness(newbrightness);
+    EFLed.setBrightness(newbrightness);
     // USBSerial.print("     -> read ");
     // USBSerial.println(leds.getBrightness());
     brightness++;

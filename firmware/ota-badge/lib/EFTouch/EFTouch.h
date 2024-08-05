@@ -38,7 +38,7 @@
 /**
  * @brief Driver for touch sensors
  */
-class EFTouch {
+class EFTouchClass {
 
     protected:
 
@@ -47,8 +47,8 @@ class EFTouch {
 
         touch_value_t detection_step;  //!< Value change required per registered touch intensity level
 
-        touch_value_t noise_fingerprint = 0;  //!< Calibrated noise floor for fingerprint touch pad
-        touch_value_t noise_nose = 0;         //!< Calibrated noise floor for nose touch pad 
+        touch_value_t noise_fingerprint;  //!< Calibrated noise floor for fingerprint touch pad
+        touch_value_t noise_nose;         //!< Calibrated noise floor for nose touch pad 
 
 
     public:
@@ -56,16 +56,23 @@ class EFTouch {
         /**
          * @brief Creates a new EFTouch instance with default values
          */
-        EFTouch();
+        EFTouchClass();
+
 
         /**
-         * @brief Creates a new EFTouch instance
+         * @brief Inizializes EFTouch. Sensible default values are used for detection_step
+         * and pin selection.
+         */
+        void init();
+
+        /**
+         * @brief Initialized EFTouch
          * 
          * @param detection_step Value change required per registered touch intensity level
          * @param pin_fingerprint Pin the fingerprint touch pad is connected to
          * @param pin_nose Pin the nose touch pad is connected to 
          */
-        EFTouch(touch_value_t detection_step, uint8_t pin_fingerprint, uint8_t pin_nose);
+        void init(touch_value_t detection_step, uint8_t pin_fingerprint, uint8_t pin_nose);
 
         /**
          * @brief Calibrates the noise floor for the analog touch pin readings.
@@ -133,5 +140,9 @@ class EFTouch {
         void attachInterruptNose(void (*isr)(void));
     
 };
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFTOUCH)
+extern EFTouchClass EFTouch;
+#endif
 
 #endif /* EFTOUCH_H_ */

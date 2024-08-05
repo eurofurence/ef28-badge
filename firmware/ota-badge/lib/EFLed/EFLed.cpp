@@ -31,99 +31,106 @@
 
 #include "EFLed.h"
 
-CRGB EFLed::led_data[EFLED_TOTAL_NUM];
+EFLedClass::EFLedClass()
+: max_brightness(0)
+, led_data({0})
+{
+}
 
-EFLed::EFLed(): EFLed(EFLED_MAX_BRIGHTNESS_DEFAULT) {}
+void EFLedClass::init() {
+    this->init(EFLED_MAX_BRIGHTNESS_DEFAULT);
+}
 
-EFLed::EFLed(uint8_t max_brightness) {
-    this->max_brightness = max_brightness;
-    
+void EFLedClass::init(const uint8_t max_brightness) {
     for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
         this->led_data[i] = CRGB::Black;
     }
-    LOGF_INFO("(EFLed) Creating new EFLed instance with max_brightness=%d\r\n", max_brightness);
+    LOG_INFO("(EFLed) Initialized internal LED data struct");
 
     FastLED.clearData();
     FastLED.addLeds<WS2812B, EFLED_PIN_LED_DATA, GRB>(this->led_data, EFLED_TOTAL_NUM);
     LOGF_DEBUG("(EFLed) Added new WS2812B: %d LEDs @ PIN %d\r\n", EFLED_TOTAL_NUM, EFLED_PIN_LED_DATA);
+
+    this->max_brightness = max_brightness;
     FastLED.setBrightness(this->max_brightness);
+    LOGF_DEBUG("(EFLed) Set max_brightness=%d\r\n", this->max_brightness)
 
     this->enablePower();
 }
 
-void EFLed::enablePower() {
+void EFLedClass::enablePower() {
     pinMode(EFLED_PIN_5VBOOST_ENABLE, OUTPUT);
     digitalWrite(EFLED_PIN_5VBOOST_ENABLE, HIGH);
     LOG_INFO("(EFLed) Enabled +5V boost converter");
     delay(10);
 }
 
-void EFLed::disablePower() {
+void EFLedClass::disablePower() {
     digitalWrite(EFLED_PIN_5VBOOST_ENABLE, LOW);
     LOG_INFO("(EFLed) Disabled +5V boost converter");
     delay(10);
 }
 
-void EFLed::clear() {
+void EFLedClass::clear() {
     for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
         this->led_data[i] = CRGB::Black;
     }
     FastLED.show();
 }
 
-void EFLed::setBrightness(uint8_t brightness) {
+void EFLedClass::setBrightness(uint8_t brightness) {
     FastLED.setBrightness(round((min(brightness, (uint8_t) 100) / (float) 100) * this->max_brightness));
 }
 
-uint8_t EFLed::getBrightness() {
+uint8_t EFLedClass::getBrightness() {
     return (uint8_t) round(FastLED.getBrightness() / (float) this->max_brightness * 100);
 }
 
-void EFLed::setDragonNose(const CRGB color) {
+void EFLedClass::setDragonNose(const CRGB color) {
     this->led_data[EFLED_DRAGON_NOSE_IDX] = color;
     FastLED.show();
 }
 
-void EFLed::setDragonMuzzle(const CRGB color) {
+void EFLedClass::setDragonMuzzle(const CRGB color) {
     this->led_data[EFLED_DRAGON_MUZZLE_IDX] = color;
     FastLED.show();
 }
 
-void EFLed::setDragonEye(const CRGB color) {
+void EFLedClass::setDragonEye(const CRGB color) {
     this->led_data[EFLED_DRAGON_EYE_IDX] = color;
     FastLED.show();
 }
 
-void EFLed::setDragonCheek(const CRGB color) {
+void EFLedClass::setDragonCheek(const CRGB color) {
     this->led_data[EFLED_DRAGON_CHEEK_IDX] = color;
     FastLED.show();
 }
 
-void EFLed::setDragonEarBottom(const CRGB color) {
+void EFLedClass::setDragonEarBottom(const CRGB color) {
     this->led_data[EFLED_DRAGON_EAR_BOTTOM_IDX] = color;
     FastLED.show();
 }
 
-void EFLed::setDragonEarTop(const CRGB color) {
+void EFLedClass::setDragonEarTop(const CRGB color) {
     this->led_data[EFLED_DRAGON_EAR_TOP_IDX] = color;
     FastLED.show();
 }
 
-void EFLed::setDragon(const CRGB color[EFLED_DRAGON_NUM]) {
+void EFLedClass::setDragon(const CRGB color[EFLED_DRAGON_NUM]) {
     for (uint8_t i = 0; i < EFLED_DRAGON_NUM; i++) {
         this->led_data[EFLED_DARGON_OFFSET + i] = color[i];
     }
     FastLED.show();
 }
 
-void EFLed::setEFBar(const CRGB color[EFLED_EFBAR_NUM]) {
+void EFLedClass::setEFBar(const CRGB color[EFLED_EFBAR_NUM]) {
     for (uint8_t i = 0; i < EFLED_EFBAR_NUM; i++) {
         this->led_data[EFLED_EFBAR_OFFSET + i] = color[i];
     }
     FastLED.show();
 }
 
-void EFLed::setEFBar(uint8_t idx, const CRGB color) {
+void EFLedClass::setEFBar(uint8_t idx, const CRGB color) {
     if (idx >= EFLED_EFBAR_NUM) {
         return;
     }
@@ -131,3 +138,7 @@ void EFLed::setEFBar(uint8_t idx, const CRGB color) {
     this->led_data[EFLED_EFBAR_OFFSET + idx] = color;
     FastLED.show();
 }
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFLED)
+EFLedClass EFLed;
+#endif

@@ -52,30 +52,36 @@
 /**
  * @brief Driver for badge LEDs
  */
-class EFLed {
+class EFLedClass {
 
     protected:
 
-        static CRGB led_data[EFLED_TOTAL_NUM];  //!< Internal LED data structure
+        CRGB led_data[EFLED_TOTAL_NUM];  //!< Internal LED data structure
         uint8_t max_brightness;  //!< Maximum raw brightness (0-255)
 
 
     public:
 
         /**
-         * @brief Constructs a new EFLed instance. Automatically initializes
-         * power circuit and FastLED library.
+         * @brief Constructs a new EFLed instance.
          */
-        EFLed();
+        EFLedClass();
 
         /**
-         * @brief Constructs a new EFLed instance. Automatically initializes
-         * power circuit and FastLED library.
+         * @brief Initializes this EFLed instance. Creates internal data structures,
+         * resets FastLED library and initializes power circuit. Maximum brightness
+         * for LEDs will be set to a sensible default.
+         */
+        void init();
+
+        /**
+         * @brief Initializes this EFLed instance. Creates internal data structures,
+         * resets FastLED library and initializes power circuit.
          * 
          * @param max_brightness Maximum raw brightness (0-255) the LEDs will
          * be allowed to be set to.
          */
-        EFLed(const uint8_t max_brightness);
+        void init(const uint8_t max_brightness);
 
         /**
          * @brief Enables the +5V power domain
@@ -171,6 +177,10 @@ class EFLed {
         void setEFBar(uint8_t idx, const CRGB color);
 
 };
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFLED)
+extern EFLedClass EFLed;
+#endif
 
 #endif /* EFLED_H_ */
 
