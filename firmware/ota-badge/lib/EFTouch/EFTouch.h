@@ -33,7 +33,10 @@
 #define EFTOUCH_PIN_TOUCH_NOSE 1
 
 #define EFTOUCH_CALIBRATE_NUM_SAMPLES 10
+#define EFTOUCH_SHORTPRESS_DURATION_MS 1000
+#define EFTOUCH_LONGPRESS_DURATION_MS  3000
 
+enum EFTouchZone {Fingerprint, Nose};  //!< Available touch zones
 
 /**
  * @brief Driver for touch sensors
@@ -50,6 +53,18 @@ class EFTouchClass {
         touch_value_t noise_fingerprint;  //!< Calibrated noise floor for fingerprint touch pad
         touch_value_t noise_nose;         //!< Calibrated noise floor for nose touch pad 
 
+        unsigned long last_touch_millis_fingerprint;  //!< Timestamp when the fingerprint was last touched
+        unsigned long last_touch_millis_nose;         //!< Timestamp when the nose was last touched
+
+        void (*onFingerprintTouchIsr)(void);       //!< ISR to execute if the fingerprint is first touched
+        void (*onFingerprintReleaseIsr)(void);     //!< ISR to execute if the fingerprint is fully released
+        void (*onFingerprintShortpressIsr)(void);  //!< ISR to execute if the fingerprint was held for at least a short amount of time
+        void (*onFingerprintLongpressIsr)(void);   //!< ISR to execute if the fingerprint was held for a long amount of time
+
+        void (*onNoseTouchIsr)(void);              //!< ISR to execute if the nose is first touched
+        void (*onNoseReleaseIsr)(void);            //!< ISR to execute if the nose is fully released
+        void (*onNoseShortpressIsr)(void);         //!< ISR to execute if the nose was held for at least a short amount of time
+        void (*onNoseLongpressIsr)(void);          //!< ISR to execute if the nose was held for a long amount of time
 
     public:
 
@@ -58,6 +73,10 @@ class EFTouchClass {
          */
         EFTouchClass();
 
+        /**
+         * @brief Destructs this EFTouch instance
+         */
+        ~EFTouchClass();
 
         /**
          * @brief Inizializes EFTouch. Sensible default values are used for detection_step
@@ -123,21 +142,97 @@ class EFTouchClass {
          */
         uint8_t readNose();
 
-        /** 
-         * @brief Attaches an interrupt service routine (ISR) to execute when a touch
-         * on the fingerprint pad is registered.
+        /**
+         * @brief Enable interrupt handling for the given touch zone
          * 
-         * @param isr Function to execute on touch event
+         * @param zone Touch zone to enable interrupts for
          */
-        void attachInterruptFingerprint(void (*isr)(void));
+        void enableInterrupts(EFTouchZone zone);
 
-        /** 
-         * @brief Attaches an interrupt service routine (ISR) to execute when a touch
-         * on the nose pad is registered.
+        /**
+         * @brief Disabled interrupt handling for the given touch zone
          * 
-         * @param isr Function to execute on touch event
+         * @param zone Touch zone to disable interrupts for
          */
-        void attachInterruptNose(void (*isr)(void));
+        void disableInterrupts(EFTouchZone zone);
+
+        /**
+         * @brief Attaches an interrupt service routine (ISR) to the given touch zone
+         * that will be executed once the touch zone is first touched
+         * 
+         * @param zone Touch zone to attach the given ISR to
+         * @param isr Interrupt service routine to execute
+         */
+        void attachInterruptOnTouch(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void));
+
+        /**
+         * @brief Attaches an interrupt service routine (ISR) to the given touch zone
+         * that will be executed once the touch zone is fully released
+         * 
+         * @param zone Touch zone to attach the given ISR to
+         * @param isr Interrupt service routine to execute
+         */
+        void attachInterruptOnRelease(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void));
+
+        /**
+         * @brief Attaches an interrupt service routine (ISR) to the given touch zone
+         * that will be executed once the touch zone is fully released and the touch
+         * duration was at least EFTOUCH_SHORTPRESS_DURATION_MS long
+         * 
+         * @param zone Touch zone to attach the given ISR to
+         * @param isr Interrupt service routine to execute
+         */
+        void attachInterruptOnShortpress(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void));
+
+        /**
+         * @brief Attaches an interrupt service routine (ISR) to the given touch zone
+         * that will be executed once the touch zone is fully released and the touch
+         * duration was at least EFTOUCH_LONGPRESS_DURATION_MS long
+         * 
+         * @param zone Touch zone to attach the given ISR to
+         * @param isr Interrupt service routine to execute
+         */
+        void attachInterruptOnLongpress(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void));
+
+        /**
+         * @brief Detatches the ISR attached by attachInterruptOnTouch() for the given
+         * touch zone, if any.
+         * 
+         * @param zone Touch zone to detatch the ISR from.
+         */
+        void detatchInterruptOnTouch(EFTouchZone zone);
+
+        /**
+         * @brief Detatches the ISR attached by attachInterruptOnRelease() for the given
+         * touch zone, if any.
+         * 
+         * @param zone Touch zone to detatch the ISR from.
+         */
+        void detatchInterruptOnRelease(EFTouchZone zone);
+
+        /**
+         * @brief Detatches the ISR attached by attachInterruptOnShortpress() for the
+         * given touch zone, if any.
+         * 
+         * @param zone Touch zone to detatch the ISR from.
+         */
+        void detatchInterruptOnShortpress(EFTouchZone zone);
+
+        /**
+         * @brief Detatches the ISR attached by attachInterruptOnLongpress() for the
+         * given touch zone, if any.
+         * 
+         * @param zone Touch zone to detatch the ISR from.
+         */
+        void detatchInterruptOnLongpress(EFTouchZone zone);
+
+        /**
+         * @brief INTERNAL interrupt handler. DO NOT EXECUTE DIRECTLY!
+         * 
+         * @param zone Touch zone the interrupt was fired for
+         * @param raising_flank True, if the touch zone was and remains touched
+         */
+        void ARDUINO_ISR_ATTR _handleInterrupt(EFTouchZone zone, bool raising_flank);
     
 };
 

@@ -122,6 +122,18 @@ void isr_noseboop() {
     boopColorIdx = (boopColorIdx + 1) % 8;
 }
 
+volatile bool logtouched = false;
+void ARDUINO_ISR_ATTR isr_touched() {logtouched = true;}
+
+volatile bool loguntouched = false;
+void ARDUINO_ISR_ATTR isr_untouched() {loguntouched=true;}
+
+volatile bool logshortpress = false;
+void ARDUINO_ISR_ATTR isr_shortpressed() {logshortpress=true; }
+
+volatile bool loglongpress = false;
+void ARDUINO_ISR_ATTR isr_longpressed() {loglongpress=true; }
+
 void setup() {
     delay(3000);
     USBSerial.begin(9600);
@@ -138,7 +150,21 @@ void setup() {
 
     // Touchy stuffy
     EFTouch.init();
-    EFTouch.attachInterruptNose(isr_noseboop);
+
+    // Just to make sure that detatching works properly
+    // EFTouch.attachInterruptOnTouch(EFTouchZone::Nose, isr_touched);
+    // EFTouch.attachInterruptOnRelease(EFTouchZone::Nose, isr_untouched);
+    // EFTouch.attachInterruptOnShortpress(EFTouchZone::Nose, isr_shortpressed);
+    // EFTouch.attachInterruptOnLongpress(EFTouchZone::Nose, isr_longpressed);
+    // EFTouch.detatchInterruptOnTouch(EFTouchZone::Nose);
+    // EFTouch.detatchInterruptOnRelease(EFTouchZone::Nose);
+    // EFTouch.detatchInterruptOnShortpress(EFTouchZone::Nose);
+    // EFTouch.detatchInterruptOnLongpress(EFTouchZone::Nose);
+
+    EFTouch.attachInterruptOnTouch(EFTouchZone::Fingerprint, isr_touched);
+    EFTouch.attachInterruptOnRelease(EFTouchZone::Fingerprint, isr_untouched);
+    EFTouch.attachInterruptOnShortpress(EFTouchZone::Fingerprint, isr_shortpressed);
+    EFTouch.attachInterruptOnLongpress(EFTouchZone::Fingerprint, isr_longpressed);
 }
 
 uint8_t deepsleepcounter = 10;
@@ -206,6 +232,23 @@ void loop() {
 
     // Wait for next iteration
     delay(10);
+
+    if (logtouched) {
+        logtouched = false;
+        LOG_DEBUG("v TOUCHED!");
+    }
+    if (logshortpress) {
+        logshortpress = false;
+        LOG_DEBUG(" - shortpress");
+    }
+    if (loglongpress) {
+        loglongpress = false;
+        LOG_DEBUG(" ----- longpress");
+    }
+    if (loguntouched) {
+        loguntouched = false;
+        LOG_DEBUG("^ released.");
+    }
 
     // if (deepsleepcounter == 0) {
     //     USBSerial.println("Putting the ESP into deep sleep for 3 seconds ...");
