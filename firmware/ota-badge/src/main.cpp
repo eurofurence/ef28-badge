@@ -16,7 +16,6 @@
 
 RTC_DATA_ATTR int bootCount = 0;
 
-
 uint8_t ledFlipper = 0;
 
 volatile uint8_t boopColorIdx = 0;
@@ -65,34 +64,46 @@ void setupOTA(const char* password) {
 
             // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
             LOG_INFO("Start updating " + type);
-            EFLed.setDragonMuzzle(CRGB::Blue);
+
+            // Setup LEDs
+            EFLed.clear();
+            EFLed.setBrightness(50);
+            EFLed.setDragonEye(CRGB::Blue);
         })
         .onEnd([]() {
             LOG_INFO("\nEnd");
             for (uint8_t i = 0; i < 3; i++) {
-                EFLed.setDragonMuzzle(CRGB::Green);
+                EFLed.setDragonEye(CRGB::Green);
                 delay(500);
-                EFLed.setDragonMuzzle(CRGB::Black);
+                EFLed.setDragonEye(CRGB::Black);
                 delay(500);
             }
             EFLed.clear();
         })
         .onProgress([](unsigned int progress, unsigned int total) {
-            LOGF_INFO("Progress: %u%%\r", (progress / (total / 100)));
+            uint8_t progresspercent = (progress / (total / 100));
+            if (progresspercent % 5 == 0) {
+                EFLed.fillEFBarProportionally(progresspercent, CRGB::Red, CRGB::Black);
+            }
+            LOGF_INFO("Progress: %u%%\r\n", progresspercent);
         })
         .onError([](ota_error_t error) {
             LOGF_ERROR("Error[%u]: ", error);
-            EFLed.setDragonMuzzle(CRGB::Red);
+            EFLed.setDragonNose(CRGB::Red);
             if (error == OTA_AUTH_ERROR) {
                 LOG_WARNING("Auth Failed");
-                EFLed.setDragonMuzzle(CRGB::Purple);
+                EFLed.setDragonNose(CRGB::Purple);
             } else if (error == OTA_BEGIN_ERROR) {
+                EFLed.setDragonNose(CRGB::Green);
                 LOG_ERROR("Begin Failed");
             } else if (error == OTA_CONNECT_ERROR) {
+                EFLed.setDragonNose(CRGB::Purple);
                 LOG_ERROR("Connect Failed");
             } else if (error == OTA_RECEIVE_ERROR) {
+                EFLed.setDragonNose(CRGB::Blue);
                 LOG_ERROR("Receive Failed");
             } else if (error == OTA_END_ERROR) {
+                EFLed.setDragonNose(CRGB::Yellow);
                 LOG_ERROR("End Failed");
             }
         });
@@ -167,18 +178,30 @@ void setup() {
     EFTouch.attachInterruptOnLongpress(EFTouchZone::Fingerprint, isr_longpressed);
 }
 
-uint8_t deepsleepcounter = 10;
+bool blinkled_state = false;
 uint8_t flagidx = 0;
 uint32_t brightness = 0;
 
+unsigned long task_blinkled = 0;
+unsigned long task_flagswitch = 0;
+unsigned long task_touchleds = 0;
+unsigned long task_brightness = 0;
+
 void loop() {
-    // Check for OTA
+    // Handler: OTA
     ArduinoOTA.handle();
 
-    // Blink a LED
-    if (ledFlipper == 0) {
+    // Task: Blink LED
+    if (task_blinkled < millis()) {
+        EFLed.setDragonEye(blinkled_state ? CRGB::Green : CRGB::Black);
+        blinkled_state = !blinkled_state;
+
+        task_blinkled = millis() + 1000;
+    }
+
+    // Task: Switch pride flag
+    if (task_flagswitch < millis()) {
         LOG_DEBUG(".");
-        deepsleepcounter--;
 
         switch (flagidx) {
             case 0: EFLed.setEFBar(EFPrideFlags::LGBT); break;
@@ -195,44 +218,30 @@ void loop() {
             case 11: EFLed.setEFBar(EFPrideFlags::Intersex); break;
         }
         flagidx = (flagidx + 1) % 12;
-    }
-    EFLed.setDragonEye(ledFlipper++ < 127 ? CRGB::Green : CRGB::Black);
 
-    // Touch LEDs
-    uint8_t touchy = EFTouch.readFingerprint();
-    if (touchy) {
-        for (uint8_t i = 0; i < EFLED_EFBAR_NUM; i++) {
-            if (touchy) {
-                EFLed.setEFBar(i , CRGB::Purple);
-                touchy--;
-            } else {
-                EFLed.setEFBar(i, CRGB::Black);
-            }
+        task_flagswitch = millis() + 3000;
+    }
+
+    // Task: Touch LEDs
+    if (task_touchleds < millis()) {
+        uint8_t touchy = EFTouch.readFingerprint();
+        if (touchy) {
+            EFLed.fillEFBarProportionally(touchy*10, CRGB::Purple, CRGB::Black);
         }
+
+        task_touchleds = millis() + 10;
     }
 
-    switch (boopColorIdx) {
-        case 0: EFLed.setDragonEarTop(CRGB::Red); break;
-        case 1: EFLed.setDragonEarTop(CRGB::Orange); break;
-        case 2: EFLed.setDragonEarTop(CRGB::Yellow); break;
-        case 3: EFLed.setDragonEarTop(CRGB::Green); break;
-        case 4: EFLed.setDragonEarTop(CRGB::Teal); break;
-        case 5: EFLed.setDragonEarTop(CRGB::Blue); break;
-        case 6: EFLed.setDragonEarTop(CRGB::BlueViolet); break;
-        case 7: EFLed.setDragonEarTop(CRGB::Purple); break;
+    // Task: Brightness
+    if (task_brightness < millis()) {
+        uint8_t newbrightness = (brightness % 202) < 101 ? brightness % 101 : 100 - (brightness % 101);
+        EFLed.setBrightness(newbrightness);
+        brightness++;
+
+        task_brightness = millis() + 10;
     }
 
-    uint8_t newbrightness = (brightness % 202) < 101 ? brightness % 101 : 100 - (brightness % 101);
-    // USBSerial.print("Set brightness = ");
-    // USBSerial.print(newbrightness);
-    EFLed.setBrightness(newbrightness);
-    // USBSerial.print("     -> read ");
-    // USBSerial.println(leds.getBrightness());
-    brightness++;
-
-    // Wait for next iteration
-    delay(10);
-
+    // Handler: ISR debug logging
     if (logtouched) {
         logtouched = false;
         LOG_DEBUG("v TOUCHED!");
