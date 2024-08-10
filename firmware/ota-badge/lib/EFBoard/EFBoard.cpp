@@ -55,6 +55,7 @@ void EFBoardClass::setup() {
     // Board initialization process
     LOG_INFO("(EFBoard) Initializing badge ...");
     LOGF_INFO("(EFBoard) Boot #%d - %s\r\n", this->getWakeupCount(), this->getWakeupReason());
+    LOGF_INFO("(EFBoard) Firmware version: %s (compiled: %s @ %s)\r\n", EFBOARD_FIRMWARE_VERSION, __DATE__, __TIME__);
 
     LOGF_DEBUG("(EFBoard) Initial CPU frequency: %d\r\n", getCpuFrequencyMhz());
     setCpuFrequencyMhz(80);

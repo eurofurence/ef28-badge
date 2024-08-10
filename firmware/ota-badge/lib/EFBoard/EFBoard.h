@@ -27,6 +27,7 @@
  * @author Honigeintopf
  */
 
+#define EFBOARD_FIRMWARE_VERSION "v1.1.0"
 #define EFBOARD_SERIAL_INIT_DELAY_MS 3000  //!< Milliseconds to wait before initializing the serial device (prevents flashing if USBSerial is used!)
 #define EFBOARD_SERIAL_DEVICE USBSerial    //!< Serial device to use for logging
 #define EFBOARD_SERIAL_BAUD 115200         //!< Baudrate for the serial device
