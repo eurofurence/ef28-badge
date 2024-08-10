@@ -63,26 +63,21 @@ void ARDUINO_ISR_ATTR isr_longpressed() {loglongpress=true; }
 
 
 void setup() {
+    // Init board
     EFBoard.setup();
     EFLed.init(20);
 
+    // Connecto to wifi
     EFLed.setDragonNose(CRGB::Red);
     if (EFBoard.connectToWifi(WIFI_SSID, WIFI_PASSWORD)) {
         EFLed.setDragonNose(CRGB::Green);
     }
 
+    // Setup OTA
     EFBoard.enableOTA(OTA_SECRET);
     EFLed.setDragonMuzzle(CRGB::Green);
     
-    // TODO: Just testing, remove me later
-    delay(2000);
-    EFBoard.disableOTA();
-    EFBoard.disableWifi();
-    delay(1000);
-    EFBoard.connectToWifi(WIFI_SSID, WIFI_PASSWORD);
-    EFBoard.enableOTA(OTA_SECRET);
-
-    // Touchy stuffy
+    // Touchy stuff
     EFTouch.init();
     EFTouch.attachInterruptOnTouch(EFTouchZone::Fingerprint, isr_touched);
     EFTouch.attachInterruptOnRelease(EFTouchZone::Fingerprint, isr_untouched);
@@ -161,12 +156,4 @@ void loop() {
         loguntouched = false;
         LOG_DEBUG("^ released.");
     }
-
-    // if (deepsleepcounter == 0) {
-    //     USBSerial.println("Putting the ESP into deep sleep for 3 seconds ...");
-    //     esp_sleep_enable_timer_wakeup(3000000);
-    // 
-    //     USBSerial.flush();
-    //     esp_deep_sleep_start();
-    // }
 }

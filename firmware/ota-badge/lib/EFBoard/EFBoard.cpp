@@ -36,6 +36,8 @@
 
 RTC_DATA_ATTR uint32_t bootCount = 0;
 
+volatile int8_t ota_last_progress = -1;
+
 EFBoardClass::EFBoardClass() {
     bootCount++;
 }
@@ -130,8 +132,8 @@ bool EFBoardClass::connectToWifi(const char* ssid, const char* password) {
     }
 
     // Log assigned MAC address and assigned IP address
-    LOGF_INFO("(EFBoard) -> IP address: %s\r\n", WiFi.localIP().toString().c_str());
-    LOGF_INFO("(EFBoard) -> MAC address: %s\r\n", WiFi.macAddress().c_str());
+    LOGF_INFO("(EFBoard)   -> IP address: %s\r\n", WiFi.localIP().toString().c_str());
+    LOGF_INFO("(EFBoard)   -> MAC address: %s\r\n", WiFi.macAddress().c_str());
     return true;
 }
 
@@ -151,9 +153,9 @@ void EFBoardClass::enableOTA(const char* password) {
 
     if (password) {
         ArduinoOTA.setPassword(password);
-        LOG_INFO("(EFBoard) -> Enabling password protection");
+        LOG_INFO("(EFBoard)   -> Enabling password protection");
     } else {
-        LOG_WARNING("(EFBoard) -> Using NO PASSWORD PROTECTION!");
+        LOG_WARNING("(EFBoard)   -> Using NO PASSWORD PROTECTION!");
     }
 
     ArduinoOTA
@@ -164,13 +166,16 @@ void EFBoardClass::enableOTA(const char* password) {
                 LOG_INFO("(OTA) Starting OTA update of U_SPIFFS ...");
             }
 
+            // Reset progress
+            ota_last_progress = -1;
+
             // Setup LEDs
             EFLed.clear();
             EFLed.setBrightness(50);
             EFLed.setDragonEye(CRGB::Blue);
         })
         .onEnd([]() {
-            LOG_INFO("(OTA) \nFinished! Rebooting ...");
+            LOG_INFO("(OTA) Finished! Rebooting ...");
             for (uint8_t i = 0; i < 3; i++) {
                 EFLed.setDragonEye(CRGB::Green);
                 delay(500);
@@ -181,10 +186,11 @@ void EFBoardClass::enableOTA(const char* password) {
         })
         .onProgress([](unsigned int progress, unsigned int total) {
             uint8_t progresspercent = (progress / (total / 100));
-            if (progresspercent % 5 == 0) {
+            if (ota_last_progress < progresspercent) {
+                ota_last_progress = progresspercent;
                 EFLed.fillEFBarProportionally(progresspercent, CRGB::Red, CRGB::Black);
+                LOGF_INFO("(OTA) Progress: %u%%\r\n", progresspercent);
             }
-            LOGF_INFO("(OTA) Progress: %u%%\r\n", progresspercent);
         })
         .onError([](ota_error_t error) {
             LOGF_ERROR("(OTA) Error[%u]: ", error);
@@ -209,7 +215,7 @@ void EFBoardClass::enableOTA(const char* password) {
 
     ArduinoOTA.begin();
 
-    LOG_INFO("(EFBoard) -> Setup OTA listeners");
+    LOG_INFO("(EFBoard)   -> Setup OTA listeners");
     LOG_INFO("(EFBoard) Enabled OTA");
 }
 
