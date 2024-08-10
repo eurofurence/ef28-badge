@@ -46,6 +46,10 @@ void EFBoardClass::setup() {
     EFBOARD_SERIAL_DEVICE.begin(EFBOARD_SERIAL_BAUD);
     delay(EFBOARD_SERIAL_INIT_DELAY_MS);
 
+    LOG("\r\n");
+    this->printCredits();
+    LOG("\r\n");
+
     // Board initialization process
     LOG_INFO("(EFBoard) Initializing badge ...");
     LOGF_INFO("(EFBoard) Boot #%d - %s\r\n", this->getWakeupCount(), this->getWakeupReason());
@@ -212,6 +216,62 @@ void EFBoardClass::enableOTA(const char* password) {
 void EFBoardClass::disableOTA() {
     ArduinoOTA.end();
     LOG_INFO("(EFBoard) Disabled OTA");
+}
+
+void EFBoardClass::printCredits() {
+    LOG("####################################################################");
+    LOG("#                                                                  #");
+    LOG("#                 ▄▀▀▄▀▀▀▄  ▄▀▀█▄   ▄▀▀▀█▀▀▄  ▄▀▀▀▀▄               #");
+    LOG("#                █   █   █ ▐ ▄▀ ▀▄ █    █  ▐ █ █   ▐               #");
+    LOG("#                ▐  █▀▀█▀    █▄▄▄█ ▐   █        ▀▄                 #");
+    LOG("#                 ▄▀    █   ▄▀   █    █      ▀▄   █                #");
+    LOG("#                █     █ ▄ █   ▄▀ ▄ ▄▀ ▄      █▀▀▀ ▄               #");
+    LOG("#                ▐     ▐   ▐   ▐   █          ▐                    #");
+    LOG("#                                  ▐                               #");
+    LOG("#                                                                  #");
+    LOG("#                          Property of the                         #");
+    LOG("#                Radical Access Technology Syndicate               #");
+    LOG("#                                                                  #");
+    LOG("# ---------------------------------------------------------------- #");
+    LOG("#                                                                  #");
+    LOG("# In your paws, you hold the Eurofurence 28 Cyberpunk badge, a     #");
+    LOG("# tangible nexus of your extraordinary support for the furry       #");
+    LOG("# community. This badge is not just an accessory; it’s a beacon of #");
+    LOG("# your commitment, dedication and generosity that helps us propel  #");
+    LOG("# everyone into a neon-lit realm where creativity and community    #");
+    LOG("# thrives admist the cybernetic backdrop.                          #");
+    LOG("#                                                                  #");
+    LOG("# It was crafted with love and dedication, involving many cycles   #");
+    LOG("# of coding, soldering and circuit-bending. This is our way of     #");
+    LOG("# saying thank you, a cyber-etched tribute to your unwavering      #");
+    LOG("# support <3                                                       #");
+    LOG("#                                                                  #");
+    LOG("# ---------------------------------------------------------------- #");
+    LOG("#                                                                  #");
+    LOG("# This terminal was crafted by:                                    #");
+    LOG("#                                                                  #");
+    LOG("#                                                                  #");
+    LOG("# ░█▀▄░█▀█░█▀▄░█░█░█▀▄░█▀█░▀█▀                                     #");
+    LOG("# ░█░█░█▀█░█▀▄░█▀▄░█▀▄░█▀█░░█░                                     #");
+    LOG("# ░▀▀░░▀░▀░▀░▀░▀░▀░▀░▀░▀░▀░░▀░                                     #");
+    LOG("#                                                                  #");
+    LOG("# ░█░█░█▀█░█▀█░▀█▀░█▀▀░█▀▀░▀█▀░█▀█░▀█▀░█▀█░█▀█░█▀▀                 #");
+    LOG("# ░█▀█░█░█░█░█░░█░░█░█░█▀▀░░█░░█░█░░█░░█░█░█▀▀░█▀▀                 #");
+    LOG("# ░▀░▀░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░░▀░░▀▀▀░▀░░░▀░░                 #");
+    LOG("#                                                                  #");
+    LOG("# ░▀█▀░█▀▄░█▀█░█░█                                                 #");
+    LOG("# ░░█░░█▀▄░█▀█░█▀█                                                 #");
+    LOG("# ░▀▀▀░▀░▀░▀░▀░▀░▀                                                 #");
+    LOG("#                                                                  #");
+    LOG("# ░▀█▀░█▀█░█░█░█▀▀░█▀█                                             #");
+    LOG("# ░░█░░█░█░█▀▄░█▀▀░█░█                                             #");
+    LOG("# ░░▀░░▀▀▀░▀░▀░▀▀▀░▀░▀                                             #");
+    LOG("#                                                                  #");
+    LOG("# ---------------------------------------------------------------- #");
+    LOG("#                                                                  #");
+    LOG("# Visit https://eurofurence.org/EF28/badge for end of transmission #");
+    LOG("#                                                                  #");
+    LOG("####################################################################");
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFBOARD)
