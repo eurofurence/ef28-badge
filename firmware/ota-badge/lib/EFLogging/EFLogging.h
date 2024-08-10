@@ -33,17 +33,17 @@
 #define LOG_DEV_SERIAL EFBOARD_SERIAL_DEVICE  //!< Serial device to use (Serial or USBSerial)
 
 #define LOG(msg)         { LOG_DEV_SERIAL.println((msg)); }
-#define LOG_DEBUG(msg)   { LOG_DEV_SERIAL.print("[DEBUG] ");   LOG_DEV_SERIAL.println((msg)); }
-#define LOG_INFO(msg)    { LOG_DEV_SERIAL.print("[INFO] ");    LOG_DEV_SERIAL.println((msg)); }
-#define LOG_WARNING(msg) { LOG_DEV_SERIAL.print("[WARNING] "); LOG_DEV_SERIAL.println((msg)); }
-#define LOG_ERROR(msg)   { LOG_DEV_SERIAL.print("[ERROR] ");   LOG_DEV_SERIAL.println((msg)); }
-#define LOG_FATAL(msg)   { LOG_DEV_SERIAL.print("[FATAL] ");   LOG_DEV_SERIAL.println((msg)); }
+#define LOG_DEBUG(msg)   { LOG_DEV_SERIAL.printf("%010.4f   [DEBUG] ", millis()/1000.0f); LOG_DEV_SERIAL.println((msg)); }
+#define LOG_INFO(msg)    { LOG_DEV_SERIAL.printf("%010.4f    [INFO] ", millis()/1000.0f); LOG_DEV_SERIAL.println((msg)); }
+#define LOG_WARNING(msg) { LOG_DEV_SERIAL.printf("%010.4f [WARNING] ", millis()/1000.0f); LOG_DEV_SERIAL.println((msg)); }
+#define LOG_ERROR(msg)   { LOG_DEV_SERIAL.printf("%010.4f   [ERROR] ", millis()/1000.0f); LOG_DEV_SERIAL.println((msg)); }
+#define LOG_FATAL(msg)   { LOG_DEV_SERIAL.printf("%010.4f   [FATAL] ", millis()/1000.0f); LOG_DEV_SERIAL.println((msg)); }
 
 #define LOGF(msg, format, ...)         { LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
-#define LOGF_DEBUG(msg, format, ...)   { LOG_DEV_SERIAL.print("[DEBUG] ");   LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
-#define LOGF_INFO(msg, format, ...)    { LOG_DEV_SERIAL.print("[INFO] ");    LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
-#define LOGF_WARNING(msg, format, ...) { LOG_DEV_SERIAL.print("[WARNING] "); LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
-#define LOGF_ERROR(msg, format, ...)   { LOG_DEV_SERIAL.print("[ERROR] ");   LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
-#define LOGF_FATAL(msg, format, ...)   { LOG_DEV_SERIAL.print("[FATAL] ");   LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
+#define LOGF_DEBUG(msg, format, ...)   { LOG_DEV_SERIAL.printf("%010.4f   [DEBUG] ", millis()/1000.0f); LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
+#define LOGF_INFO(msg, format, ...)    { LOG_DEV_SERIAL.printf("%010.4f    [INFO] ", millis()/1000.0f); LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
+#define LOGF_WARNING(msg, format, ...) { LOG_DEV_SERIAL.printf("%010.4f [WARNING] ", millis()/1000.0f); LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
+#define LOGF_ERROR(msg, format, ...)   { LOG_DEV_SERIAL.printf("%010.4f   [ERROR] ", millis()/1000.0f); LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
+#define LOGF_FATAL(msg, format, ...)   { LOG_DEV_SERIAL.printf("%010.4f   [FATAL] ", millis()/1000.0f); LOG_DEV_SERIAL.printf((msg), (format), ##__VA_ARGS__); }
 
 #endif /* EFLOGGING_H_ */
