@@ -176,6 +176,16 @@ class EFLedClass {
          */
         void setEFBar(uint8_t idx, const CRGB color);
 
+        /**
+         * @brief Fills the whole EF LED bar according to the given percentage.
+         * 
+         * @param percent Value between 0 - 100 indicating the amount of the
+         * EF LED bar to be filled (0: none, 50: half, 100: all)
+         * @param color_on Color to use for active LEDs
+         * @param color_off Color to use for inactive LEDs
+         */
+        void fillEFBarProportionally(uint8_t percent, const CRGB color_on, const CRGB color_off);
+
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFLED)

@@ -80,6 +80,7 @@ void EFLedClass::clear() {
 
 void EFLedClass::setBrightness(uint8_t brightness) {
     FastLED.setBrightness(round((min(brightness, (uint8_t) 100) / (float) 100) * this->max_brightness));
+    FastLED.show();
 }
 
 uint8_t EFLedClass::getBrightness() {
@@ -136,6 +137,21 @@ void EFLedClass::setEFBar(uint8_t idx, const CRGB color) {
     }
 
     this->led_data[EFLED_EFBAR_OFFSET + idx] = color;
+    FastLED.show();
+}
+
+void EFLedClass::fillEFBarProportionally(
+    uint8_t percent,
+    const CRGB color_on,
+    const CRGB color_off
+) {
+    uint8_t num_leds_on = min(int(round(percent / (100.0f / EFLED_EFBAR_NUM))), EFLED_EFBAR_NUM);
+    for (uint8_t i = 0; i < num_leds_on; i++) {
+        this->led_data[EFLED_EFBAR_OFFSET + i] = color_on;
+    }
+    for (uint8_t i = num_leds_on; i < EFLED_EFBAR_NUM; i++) {
+        this->led_data[EFLED_EFBAR_OFFSET + i] = color_off;
+    }
     FastLED.show();
 }
 
