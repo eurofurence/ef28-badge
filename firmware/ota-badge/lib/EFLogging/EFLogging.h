@@ -28,9 +28,8 @@
  */
 
 #include <Arduino.h>
-#include <EFBoard.h>
 
-#define LOG_DEV_SERIAL EFBOARD_SERIAL_DEVICE  //!< Serial device to use (Serial or USBSerial)
+#define LOG_DEV_SERIAL USBSerial  //!< Serial device to use (Serial or USBSerial)
 
 #define LOG(msg)         { LOG_DEV_SERIAL.println((msg)); }
 #define LOG_DEBUG(msg)   { LOG_DEV_SERIAL.printf("%010.4f   [DEBUG] ", millis()/1000.0f); LOG_DEV_SERIAL.println((msg)); }

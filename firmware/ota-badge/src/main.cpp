@@ -36,124 +36,98 @@
 #include <EFTouch.h>
 
 #include "constants.h"
+#include "FSM.h"
 #include "secrets.h"
 
+FSM fsm(10);
 
 bool blinkled_state = false;
-uint8_t flagidx = 0;
-uint32_t brightness = 0;
-
+unsigned long task_fsm_handle = 0;
 unsigned long task_blinkled = 0;
-unsigned long task_flagswitch = 0;
-unsigned long task_touchleds = 0;
-unsigned long task_brightness = 0;
 
+volatile struct ISREventsType {
+    unsigned char fingerprintTouch:      1;
+    unsigned char fingerprintRelease:    1;
+    unsigned char fingerprintShortpress: 1;
+    unsigned char fingerprintLongpress:  1;
+    unsigned char noseTouch:             1;
+    unsigned char noseRelease:           1;
+    unsigned char noseShortpress:        1;
+    unsigned char noseLongpress:         1;
+} isrEvents;
 
-volatile bool logtouched = false;
-void ARDUINO_ISR_ATTR isr_touched() {logtouched = true;}
-
-volatile bool loguntouched = false;
-void ARDUINO_ISR_ATTR isr_untouched() {loguntouched=true;}
-
-volatile bool logshortpress = false;
-void ARDUINO_ISR_ATTR isr_shortpressed() {logshortpress=true; }
-
-volatile bool loglongpress = false;
-void ARDUINO_ISR_ATTR isr_longpressed() {loglongpress=true; }
-
+void ARDUINO_ISR_ATTR isr_fingerprintTouch()      { isrEvents.fingerprintTouch = 1; }
+void ARDUINO_ISR_ATTR isr_fingerprintRelease()    { isrEvents.fingerprintRelease = 1; }
+void ARDUINO_ISR_ATTR isr_fingerprintShortpress() { isrEvents.fingerprintShortpress = 1; }
+void ARDUINO_ISR_ATTR isr_fingerprintLongpress()  { isrEvents.fingerprintLongpress = 1; }
+void ARDUINO_ISR_ATTR isr_noseTouch()             { isrEvents.noseTouch = 1; }
+void ARDUINO_ISR_ATTR isr_noseRelease()           { isrEvents.noseRelease = 1; }
+void ARDUINO_ISR_ATTR isr_noseShortpress()        { isrEvents.noseShortpress = 1; }
+void ARDUINO_ISR_ATTR isr_noseLongpress()         { isrEvents.noseLongpress = 1; }
 
 void setup() {
     // Init board
     EFBoard.setup();
-    EFLed.init(20);
-
-    // Connecto to wifi
-    EFLed.setDragonNose(CRGB::Red);
-    if (EFBoard.connectToWifi(WIFI_SSID, WIFI_PASSWORD)) {
-        EFLed.setDragonNose(CRGB::Green);
-    }
-
-    // Setup OTA
-    EFBoard.enableOTA(OTA_SECRET);
-    EFLed.setDragonMuzzle(CRGB::Green);
+    EFLed.init(16);
     
     // Touchy stuff
     EFTouch.init();
-    EFTouch.attachInterruptOnTouch(EFTouchZone::Fingerprint, isr_touched);
-    EFTouch.attachInterruptOnRelease(EFTouchZone::Fingerprint, isr_untouched);
-    EFTouch.attachInterruptOnShortpress(EFTouchZone::Fingerprint, isr_shortpressed);
-    EFTouch.attachInterruptOnLongpress(EFTouchZone::Fingerprint, isr_longpressed);
+    EFTouch.attachInterruptOnTouch(EFTouchZone::Fingerprint, isr_fingerprintTouch);
+    EFTouch.attachInterruptOnRelease(EFTouchZone::Fingerprint, isr_fingerprintRelease);
+    EFTouch.attachInterruptOnShortpress(EFTouchZone::Fingerprint, isr_fingerprintShortpress);
+    EFTouch.attachInterruptOnLongpress(EFTouchZone::Fingerprint, isr_fingerprintLongpress);
+    EFTouch.attachInterruptOnTouch(EFTouchZone::Nose, isr_noseTouch);
+    EFTouch.attachInterruptOnRelease(EFTouchZone::Nose, isr_noseRelease);
+    EFTouch.attachInterruptOnShortpress(EFTouchZone::Nose, isr_noseShortpress);
+    EFTouch.attachInterruptOnLongpress(EFTouchZone::Nose, isr_noseLongpress);
 }
 
 void loop() {
-    // Handler: OTA
-    ArduinoOTA.handle();
+    // Handler: ISR Events
+    if (isrEvents.fingerprintTouch) {
+        fsm.queueEvent(FSMEvent::FingerprintTouch);
+        isrEvents.fingerprintTouch = false;
+    }
+    if (isrEvents.fingerprintRelease) {
+        fsm.queueEvent(FSMEvent::FingerprintRelease);
+        isrEvents.fingerprintRelease = false;
+    }
+    if (isrEvents.fingerprintShortpress) {
+        fsm.queueEvent(FSMEvent::FingerprintShortpress);
+        isrEvents.fingerprintShortpress = false;
+    }
+    if (isrEvents.fingerprintLongpress) {
+        fsm.queueEvent(FSMEvent::FingerprintLongpress);
+        isrEvents.fingerprintLongpress = false;
+    }
+    if (isrEvents.noseTouch) {
+        fsm.queueEvent(FSMEvent::NoseTouch);
+        isrEvents.noseTouch = false;
+    }
+    if (isrEvents.noseRelease) {
+        fsm.queueEvent(FSMEvent::NoseRelease);
+        isrEvents.noseRelease = false;
+    }
+    if (isrEvents.noseShortpress) {
+        fsm.queueEvent(FSMEvent::NoseShortpress);
+        isrEvents.noseShortpress = false;
+    }
+    if (isrEvents.noseLongpress) {
+        fsm.queueEvent(FSMEvent::NoseLongpress);
+        isrEvents.noseLongpress = false;
+    }
+
+    // Task: Handle FSM
+    if (task_fsm_handle < millis()) {
+        fsm.handle();
+        task_fsm_handle = millis() + fsm.getTickRateMs();
+    }
 
     // Task: Blink LED
     if (task_blinkled < millis()) {
-        EFLed.setDragonEye(blinkled_state ? CRGB::Green : CRGB::Black);
+        EFLed.setDragonEarTop(blinkled_state ? CRGB::Green : CRGB::Black);
         blinkled_state = !blinkled_state;
 
         task_blinkled = millis() + 1000;
-    }
-
-    // Task: Switch pride flag
-    if (task_flagswitch < millis()) {
-        LOG_DEBUG("Switched pride flag");
-
-        switch (flagidx) {
-            case 0: EFLed.setEFBar(EFPrideFlags::LGBT); break;
-            case 1: EFLed.setEFBar(EFPrideFlags::LGBTQI); break;
-            case 2: EFLed.setEFBar(EFPrideFlags::Bisexual); break;
-            case 3: EFLed.setEFBar(EFPrideFlags::Polyamorous); break;
-            case 4: EFLed.setEFBar(EFPrideFlags::Polysexual); break;
-            case 5: EFLed.setEFBar(EFPrideFlags::Transgender); break;
-            case 6: EFLed.setEFBar(EFPrideFlags::Pansexual); break;
-            case 7: EFLed.setEFBar(EFPrideFlags::Asexual); break;
-            case 8: EFLed.setEFBar(EFPrideFlags::Genderfluid); break;
-            case 9: EFLed.setEFBar(EFPrideFlags::Genderqueer); break;
-            case 10: EFLed.setEFBar(EFPrideFlags::Nonbinary); break;
-            case 11: EFLed.setEFBar(EFPrideFlags::Intersex); break;
-        }
-        flagidx = (flagidx + 1) % 12;
-
-        task_flagswitch = millis() + 3000;
-    }
-
-    // Task: Touch LEDs
-    if (task_touchleds < millis()) {
-        uint8_t touchy = EFTouch.readFingerprint();
-        if (touchy) {
-            EFLed.fillEFBarProportionally(touchy*10, CRGB::Purple, CRGB::Black);
-        }
-
-        task_touchleds = millis() + 10;
-    }
-
-    // Task: Brightness
-    if (task_brightness < millis()) {
-        uint8_t newbrightness = (brightness % 202) < 101 ? brightness % 101 : 100 - (brightness % 101);
-        EFLed.setBrightness(newbrightness);
-        brightness++;
-
-        task_brightness = millis() + 10;
-    }
-
-    // Handler: ISR debug logging
-    if (logtouched) {
-        logtouched = false;
-        LOG_DEBUG("v TOUCHED!");
-    }
-    if (logshortpress) {
-        logshortpress = false;
-        LOG_DEBUG(" - shortpress");
-    }
-    if (loglongpress) {
-        loglongpress = false;
-        LOG_DEBUG(" ----- longpress");
-    }
-    if (loguntouched) {
-        loguntouched = false;
-        LOG_DEBUG("^ released.");
     }
 }

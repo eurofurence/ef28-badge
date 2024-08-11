@@ -140,6 +140,17 @@ void EFLedClass::setEFBar(uint8_t idx, const CRGB color) {
     FastLED.show();
 }
 
+void EFLedClass::setEFBarCursor(
+    uint8_t idx,
+    const CRGB color_on,
+    const CRGB color_off
+) {
+    for (uint8_t i = 0; i < EFLED_EFBAR_NUM; i++) {
+        this->led_data[EFLED_EFBAR_OFFSET + i] = (i == idx) ? color_on : color_off;
+    }
+    FastLED.show();
+}
+
 void EFLedClass::fillEFBarProportionally(
     uint8_t percent,
     const CRGB color_on,

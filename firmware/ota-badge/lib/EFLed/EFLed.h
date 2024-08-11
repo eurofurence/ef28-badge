@@ -27,10 +27,10 @@
  * @author Honigeintopf
  */
 
-#include <FastLED.h>
-
 #define FASTLED_ALL_PINS_HARDWARE_SPI
 #define FASTLED_ESP32_SPI_BUS HSPI
+
+#include <FastLED.h>
 
 #define EFLED_PIN_LED_DATA 21
 #define EFLED_PIN_5VBOOST_ENABLE 9
@@ -178,6 +178,16 @@ class EFLedClass {
          * @param color Color to set
          */
         void setEFBar(uint8_t idx, const CRGB color);
+
+        /**
+         * @brief Sets a single LED of the EFBar to one color and the remaining LEDs
+         * to another color
+         * 
+         * @param idx Number of the led to set active (from top to bottom)
+         * @param color_on Color to use for active LEDs
+         * @param color_off Color to use for inactive LEDs
+         */
+        void setEFBarCursor(uint8_t idx, const CRGB color_on, const CRGB color_off);
 
         /**
          * @brief Fills the whole EF LED bar according to the given percentage.
