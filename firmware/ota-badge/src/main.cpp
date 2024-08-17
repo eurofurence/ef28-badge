@@ -44,6 +44,7 @@ FSM fsm(10);
 bool blinkled_state = false;
 unsigned long task_fsm_handle = 0;
 unsigned long task_blinkled = 0;
+unsigned long task_battery = 0;
 
 volatile struct ISREventsType {
     unsigned char fingerprintTouch:      1;
@@ -129,5 +130,18 @@ void loop() {
         blinkled_state = !blinkled_state;
 
         task_blinkled = millis() + 1000;
+    }
+
+    // Task: Battery voltage
+    if (task_battery < millis()) {
+        if (EFBoard.isBatteryPowered()) {
+            LOGF_DEBUG(
+                "Battery voltage: %.2f V (%d %%)\r\n",
+                EFBoard.getBatteryVoltage(),
+                EFBoard.getBatteryCapacityPercent()
+            );
+        }
+
+        task_battery = millis() + 60000;
     }
 }
