@@ -117,6 +117,34 @@ const char* EFBoardClass::getWakeupReason() {
     }
 }
 
+const float EFBoardClass::getBatteryVoltage() {
+    // voltageBattery = adcValue * voltPerADCStep * voltageDividerRatio
+    return (analogRead(EFBOARD_PIN_VBAT) * (3.3 / 4095.0)) * ((51.1 + 100.0) / 100.0);
+}
+
+const bool EFBoardClass::isBatteryPowered() {
+    return this->getBatteryVoltage() > EFBOARD_VBAT_MIN - 0.2;
+}
+
+const uint8_t EFBoardClass::getBatteryCapacityPercent() {
+    /* Used Varta Longlife AA cells discharge curve as a base.
+     *
+     * We consider 1.16 V as empty even though the cells are not empty at that
+     * point due to the brown out voltage of the DC/DC for the 3.3V rail.
+     *
+     * Data points used to fit cubic function to:
+     *   - 1.60 V = 100 %
+     *   - 1.50 V =  94 %
+     *   - 1.40 V =  87 %
+     *   - 1.30 V =  66 %
+     *   - 1.20 V =  23 %
+     *   - 1.16 V =   0 %
+     */
+    double vBatCell = this->getBatteryVoltage() / 3.0;
+    double percent = (14.9679 * pow(vBatCell, 3) - 68.9823 * pow(vBatCell, 2) + 106.4289 * vBatCell - 54.0063) * 100.0;
+    return max(min((int) round(percent), 100), 0);
+}
+
 bool EFBoardClass::connectToWifi(const char* ssid, const char* password) {
     LOGF_INFO("(EFBoard) Connecting to WiFi network: %s ", ssid);
 

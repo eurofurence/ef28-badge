@@ -32,6 +32,11 @@
 #define EFBOARD_SERIAL_DEVICE USBSerial    //!< Serial device to use for logging
 #define EFBOARD_SERIAL_BAUD 115200         //!< Baudrate for the serial device
 
+#define EFBOARD_PIN_VBAT 10                //!< Pin the analog voltage divider for V_BAT is connected to
+#define EFBOARD_NUM_BATTERIES 3            //!< Number of battery cells used for V_BAT
+#define EFBOARD_VBAT_MAX (1.6 * EFBOARD_NUM_BATTERIES)  //!< Voltage at which battery cells are considered full
+#define EFBOARD_VBAT_MIN (1.16 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
+
 
 /**
  * @brief Basic related to the EF badge board
@@ -63,6 +68,27 @@ class EFBoardClass {
          * @return Wakeup reason as string
          */
         const char* getWakeupReason();
+
+        /**
+         * @brief Reads the current battery voltage
+         * 
+         * @return Current battery voltage
+         */
+        const float getBatteryVoltage();
+
+        /**
+         * @brief Determiens if the badge currently has batteries connected to it
+         * 
+         * @return True if batterys were detected
+         */
+        const bool isBatteryPowered();
+
+        /**
+         * @brief Approximates current battery capacity level in percent
+         * 
+         * @return Current approx. battery capacity level in percent (0 - 100)
+         */
+        const uint8_t getBatteryCapacityPercent();
 
         /**
          * @brief Tries to connect to the given Wifi access point
