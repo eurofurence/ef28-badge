@@ -57,9 +57,23 @@ void EFBoardClass::setup() {
     LOGF_INFO("(EFBoard) Boot #%d - %s\r\n", this->getWakeupCount(), this->getWakeupReason());
     LOGF_INFO("(EFBoard) Firmware version: %s (compiled: %s @ %s)\r\n", EFBOARD_FIRMWARE_VERSION, __DATE__, __TIME__);
 
+    // CPU frequency
     LOGF_DEBUG("(EFBoard) Initial CPU frequency: %d\r\n", getCpuFrequencyMhz());
     setCpuFrequencyMhz(80);
     LOGF_INFO("(EFBoard) Set CPU frequency to: %d\r\n", getCpuFrequencyMhz());
+
+    // Initialize ADC for V_BAT measuring
+    analogReadResolution(12);
+    LOG_DEBUG("(EFBoard) Set ADC read resolution to: 12 bit");
+    pinMode(EFBOARD_PIN_VBAT, INPUT);
+    LOG_INFO("(EFBoard) Inizialized battery sense ADC")
+
+    if (this->isBatteryPowered()) {
+        LOG_INFO("(EFBoard) Running from battery");
+        LOGF_INFO("(EFBoard)   -> Battery voltage: %.2fV\r\n", this->getBatteryVoltage());
+    } else {
+        LOG_INFO("(EFBoard) Running from USB power");
+    }
 
     this->disableWifi();
     this->disableOTA();
