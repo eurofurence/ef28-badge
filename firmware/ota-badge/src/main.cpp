@@ -160,33 +160,40 @@ void loop() {
         fsm.queueEvent(FSMEvent::FingerprintTouch);
         isrEvents.fingerprintTouch = false;
     }
-    if (isrEvents.fingerprintRelease) {
-        fsm.queueEvent(FSMEvent::FingerprintRelease);
+    if (isrEvents.fingerprintLongpress) {
+        fsm.queueEvent(FSMEvent::FingerprintLongpress);
+        isrEvents.fingerprintLongpress = false;
+        isrEvents.fingerprintShortpress = false;
         isrEvents.fingerprintRelease = false;
     }
     if (isrEvents.fingerprintShortpress) {
         fsm.queueEvent(FSMEvent::FingerprintShortpress);
         isrEvents.fingerprintShortpress = false;
+        isrEvents.fingerprintRelease = false;
     }
-    if (isrEvents.fingerprintLongpress) {
-        fsm.queueEvent(FSMEvent::FingerprintLongpress);
-        isrEvents.fingerprintLongpress = false;
+    if (isrEvents.fingerprintRelease) {
+        fsm.queueEvent(FSMEvent::FingerprintRelease);
+        isrEvents.fingerprintRelease = false;
     }
+
     if (isrEvents.noseTouch) {
         fsm.queueEvent(FSMEvent::NoseTouch);
         isrEvents.noseTouch = false;
     }
-    if (isrEvents.noseRelease) {
-        fsm.queueEvent(FSMEvent::NoseRelease);
+    if (isrEvents.noseLongpress) {
+        fsm.queueEvent(FSMEvent::NoseLongpress);
+        isrEvents.noseLongpress = false;
+        isrEvents.noseShortpress = false;
         isrEvents.noseRelease = false;
     }
     if (isrEvents.noseShortpress) {
         fsm.queueEvent(FSMEvent::NoseShortpress);
         isrEvents.noseShortpress = false;
+        isrEvents.noseRelease = false;
     }
-    if (isrEvents.noseLongpress) {
-        fsm.queueEvent(FSMEvent::NoseLongpress);
-        isrEvents.noseLongpress = false;
+    if (isrEvents.noseRelease) {
+        fsm.queueEvent(FSMEvent::NoseRelease);
+        isrEvents.noseRelease = false;
     }
 
     // Task: Handle FSM
