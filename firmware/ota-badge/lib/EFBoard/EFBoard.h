@@ -27,6 +27,8 @@
  * @author Honigeintopf
  */
 
+#include "EFBoardPowerState.h"
+
 #define EFBOARD_FIRMWARE_VERSION "v1.1.0"
 #define EFBOARD_SERIAL_INIT_DELAY_MS 3000  //!< Milliseconds to wait before initializing the serial device (prevents flashing if USBSerial is used!)
 #define EFBOARD_SERIAL_DEVICE USBSerial    //!< Serial device to use for logging
@@ -34,14 +36,21 @@
 
 #define EFBOARD_PIN_VBAT 10                //!< Pin the analog voltage divider for V_BAT is connected to
 #define EFBOARD_NUM_BATTERIES 3            //!< Number of battery cells used for V_BAT
-#define EFBOARD_VBAT_MAX (1.6 * EFBOARD_NUM_BATTERIES)  //!< Voltage at which battery cells are considered full
+#define EFBOARD_VBAT_MAX (1.60 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered full
 #define EFBOARD_VBAT_MIN (1.16 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
+
+#define EFBOARD_BROWN_OUT_SOFT EFBOARD_VBAT_MIN //!< V_BAT threshold after which a soft brown out is triggered
+#define EFBOARD_BROWN_OUT_HARD 3.35             //!< V_BAT threshold after which a hard brown out is triggered
 
 
 /**
  * @brief Basic related to the EF badge board
  */
 class EFBoardClass {
+
+    protected:
+
+        EFBoardPowerState power_state;  //!< Power state of the board during the last check 
 
     public:
 
@@ -89,6 +98,32 @@ class EFBoardClass {
          * @return Current approx. battery capacity level in percent (0 - 100)
          */
         const uint8_t getBatteryCapacityPercent();
+
+        /**
+         * @brief Updates the power state of the board. If a brown out state was
+         * reached once, the board power state does not automatically recover
+         * from this.
+         * 
+         * If you wish to reset the brown out condition use resetPowerState().
+         * 
+         * @return The detected power state
+         */
+        const EFBoardPowerState updatePowerState();
+
+        /**
+         * @brief Retrieves the last known power state
+         * 
+         * @return Last detected power state
+         */
+        const EFBoardPowerState getPowerState();
+
+        /**
+         * @brief Resets and updates the power state of the board. This method
+         * allows to clear previously set brown out states.
+         * 
+         * @return The detected power state
+         */
+        const EFBoardPowerState resetPowerState();
 
         /**
          * @brief Tries to connect to the given Wifi access point

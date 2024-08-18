@@ -38,7 +38,8 @@ RTC_DATA_ATTR uint32_t bootCount = 0;
 
 volatile int8_t ota_last_progress = -1;
 
-EFBoardClass::EFBoardClass() {
+EFBoardClass::EFBoardClass()
+: power_state(EFBoardPowerState::UNKNOWN) {
     bootCount++;
 }
 
@@ -68,6 +69,17 @@ void EFBoardClass::setup() {
     pinMode(EFBOARD_PIN_VBAT, INPUT);
     LOG_INFO("(EFBoard) Inizialized battery sense ADC")
 
+    // Check power state
+    const EFBoardPowerState pwrstate = this->getPowerState();
+    if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
+        LOGF_ERROR("(EFBoard) HARD BROWN OUT DETECTED (V_BAT = %.2f V). Panic!\r\n", this->getBatteryVoltage());
+        while(1) {
+            delay(1000);
+        }
+    } else if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
+        LOGF_WARNING("(EFBoard) Soft brown out detected (V_BAT = %.2f V)\r\n", this->getBatteryVoltage());
+    }
+
     if (this->isBatteryPowered()) {
         LOG_INFO("(EFBoard) Running from battery");
         LOGF_INFO("(EFBoard)   -> Battery voltage: %.2fV\r\n", this->getBatteryVoltage());
@@ -75,6 +87,7 @@ void EFBoardClass::setup() {
         LOG_INFO("(EFBoard) Running from USB power");
     }
 
+    // Wifi modem stuff
     this->disableWifi();
     this->disableOTA();
 
@@ -123,7 +136,7 @@ const float EFBoardClass::getBatteryVoltage() {
 }
 
 const bool EFBoardClass::isBatteryPowered() {
-    return this->getBatteryVoltage() > EFBOARD_VBAT_MIN - 0.2;
+    return this->getBatteryVoltage() > EFBOARD_VBAT_MIN - 0.5;
 }
 
 const uint8_t EFBoardClass::getBatteryCapacityPercent() {
@@ -143,6 +156,33 @@ const uint8_t EFBoardClass::getBatteryCapacityPercent() {
     double vBatCell = this->getBatteryVoltage() / 3.0;
     double percent = (14.9679 * pow(vBatCell, 3) - 68.9823 * pow(vBatCell, 2) + 106.4289 * vBatCell - 54.0063) * 100.0;
     return max(min((int) round(percent), 100), 0);
+}
+
+const EFBoardPowerState EFBoardClass::updatePowerState() {
+    if (!this->isBatteryPowered()) {
+        this->power_state = EFBoardPowerState::USB;
+    } else {
+        const float vbat = this->getBatteryVoltage();
+        if (vbat <= EFBOARD_BROWN_OUT_HARD || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
+            this->power_state = EFBoardPowerState::BAT_BROWN_OUT_HARD;
+        } else if (vbat <= EFBOARD_BROWN_OUT_SOFT || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
+            this->power_state = EFBoardPowerState::BAT_BROWN_OUT_SOFT;
+        } else {
+            this->power_state = EFBoardPowerState::BAT_NORMAL;
+        }
+
+    }
+
+    return this->power_state;
+}
+
+const EFBoardPowerState EFBoardClass::getPowerState() {
+    return this->power_state;
+}
+
+const EFBoardPowerState EFBoardClass::resetPowerState() {
+    this->power_state = EFBoardPowerState::UNKNOWN;
+    return this->updatePowerState();
 }
 
 bool EFBoardClass::connectToWifi(const char* ssid, const char* password) {
