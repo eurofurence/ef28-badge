@@ -26,6 +26,10 @@
 
 #include "FSMState.h"
 
+void FSMState::attachGlobals(std::shared_ptr<FSMGlobals> globals) {
+    this->globals = std::move(globals);
+}
+
 const char* FSMState::getName() {
     return "FSMState";
 }

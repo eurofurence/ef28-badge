@@ -35,7 +35,9 @@ FSM::FSM(unsigned int tickrate_ms)
 , tickrate_ms(tickrate_ms)
 , state_last_run(0)
 {
+    this->globals = std::make_shared<FSMGlobals>();
     this->state = std::make_unique<DisplayPrideFlag>();
+    this->state->attachGlobals(this->globals);
     this->state->entry();
 }
 
@@ -148,6 +150,7 @@ void FSM::handle(unsigned int num_events) {
             LOGF_INFO("(FSM) Transition %s -> %s\r\n", this->state->getName(), next->getName());
             this->state->exit();
             this->state = std::move(next);
+            this->state->attachGlobals(this->globals);
             this->state_last_run = 0;
             this->state->entry();
         }

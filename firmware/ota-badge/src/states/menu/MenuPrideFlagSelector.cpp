@@ -30,14 +30,37 @@ const char* MenuPrideFlagSelector::getName() {
     return "MenuPrideFlagSelector";
 }
 
-void MenuPrideFlagSelector::entry() {}
+const unsigned int MenuPrideFlagSelector::getTickRateMs() {
+    if (this->globals->prideFlagModeIdx == 0) {
+        return 1000;
+    } else {
+        return 100;
+    }
+}
 
-void MenuPrideFlagSelector::exit() {}
+void MenuPrideFlagSelector::entry() {
+    // Construct DisplayPrideFlag state locally to get a preview of the current mode
+    this->prideFlagDisplayRunner = std::make_unique<DisplayPrideFlag>();
+    this->prideFlagDisplayRunner->attachGlobals(this->globals);
+}
 
-std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintTouch() {
+void MenuPrideFlagSelector::run() {
+    this->prideFlagDisplayRunner->run();
+}
+
+void MenuPrideFlagSelector::exit() {
+    this->prideFlagDisplayRunner.reset();
+}
+
+std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintRelease() {
+    this->globals->prideFlagModeIdx = (this->globals->prideFlagModeIdx + 1) % 13;
     return nullptr;
 }
 
 std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintShortpress() {
-    return nullptr;
+    return std::make_unique<MenuMain>();
+}
+
+std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintLongpress() {
+    return std::make_unique<MenuMain>();
 }

@@ -25,6 +25,7 @@
  */
 
 #include <EFLed.h>
+#include <EFLogging.h>
 
 #include "FSMState.h"
 
@@ -35,10 +36,7 @@ const char* MenuMain::getName() {
 void MenuMain::entry() {
     EFLed.clear();
     EFLed.setDragonEye(CRGB::Green);
-
-
-    menucursor_idx = 0;
-    EFLed.setEFBarCursor(menucursor_idx, CRGB::Purple, CRGB::Black);
+    EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, CRGB::Purple, CRGB::Black);
 }
 
 void MenuMain::exit() {
@@ -50,12 +48,17 @@ std::unique_ptr<FSMState> MenuMain::touchEventFingerprintTouch() {
 }
 
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintRelease() {
-    EFLed.setEFBarCursor((++menucursor_idx % 11), CRGB::Purple, CRGB::Black);
+    this->globals->menuMainPointerIdx = (this->globals->menuMainPointerIdx + 1) % 2;
+    EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, CRGB::Purple, CRGB::Black);
     return nullptr;
 }
 
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
-    return nullptr;
+    LOGF_DEBUG("(MenuMain) menuMainPointerIdx = %d\r\n", this->globals->menuMainPointerIdx);
+    switch (this->globals->menuMainPointerIdx) {
+        case 0: return std::make_unique<MenuPrideFlagSelector>();
+        default: return nullptr;
+    }
 }
 
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintLongpress() {
