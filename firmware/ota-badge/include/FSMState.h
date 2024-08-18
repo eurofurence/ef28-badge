@@ -29,12 +29,23 @@
 
 #include <memory>
 
+#include "FSMGlobals.h"
+
+
 /**
  * @brief Base class for FSM states
  */
 class FSMState {
 
+    protected:
+    
+        std::shared_ptr<FSMGlobals> globals;  //!< Pointer to global FSM state variables
+
     public:
+        /**
+         * @brief Sets the reference on the global FSM data struct
+         */
+        void attachGlobals(std::shared_ptr<FSMGlobals> globals);
 
         /**
          * @brief Provides access to the name of this state
@@ -145,13 +156,18 @@ struct MenuMain : public FSMState {
  * @brief Sub-Menu: Pride flag selector
  */
 struct MenuPrideFlagSelector : public FSMState {
+    std::unique_ptr<FSMState> prideFlagDisplayRunner;
+
     virtual const char* getName() override;
+    virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;
+    virtual void run() override;
     virtual void exit() override;
 
-    virtual std::unique_ptr<FSMState> touchEventFingerprintTouch() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
 };
 
 /**

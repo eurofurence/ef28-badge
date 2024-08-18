@@ -30,22 +30,10 @@
 #include <memory>
 #include <queue>
 
+#include "FSMEvent.h"
+#include "FSMGlobals.h"
 #include "FSMState.h"
 
-/**
- * @brief Events the FSM is sensitive to
- */
-enum class FSMEvent {
-    NoOp,
-    FingerprintTouch,
-    FingerprintRelease,
-    FingerprintShortpress,
-    FingerprintLongpress,
-    NoseTouch,
-    NoseRelease,
-    NoseShortpress,
-    NoseLongpress,
-};
 
 /**
  * @brief Main finite state machine (FSM)
@@ -57,8 +45,9 @@ class FSM {
         unsigned int tickrate_ms;         //!< Amount of milliseconds this FSM whishes to be handle()'ed
         unsigned int state_last_run;      //!< Timestamp of the last execution of the current states run() method
 
-        std::unique_ptr<FSMState> state;  //!< Current FSM state
-        std::queue<FSMEvent> eventqueue;  //!< Queue to store FSMEvents. ATTENTION: THIS IS NOT THREAD SAFE ON ITS OWN!
+        std::unique_ptr<FSMState> state;     //!< Current FSM state
+        std::queue<FSMEvent> eventqueue;     //!< Queue to store FSMEvents. ATTENTION: THIS IS NOT THREAD SAFE ON ITS OWN!
+        std::shared_ptr<FSMGlobals> globals; //!< Global FSM state data
 
         /**
          * @brief Retrieves the next FSMEvent from the queue in a non-blocking fashion.
