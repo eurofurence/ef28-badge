@@ -29,14 +29,14 @@
 
 #include <Arduino.h>
 
+#include "EFTouchZone.h"
+
 #define EFTOUCH_PIN_TOUCH_FINGERPRINT 3
 #define EFTOUCH_PIN_TOUCH_NOSE 1
 
 #define EFTOUCH_CALIBRATE_NUM_SAMPLES 10
 #define EFTOUCH_SHORTPRESS_DURATION_MS 1000
 #define EFTOUCH_LONGPRESS_DURATION_MS  3000
-
-enum EFTouchZone {Fingerprint, Nose};  //!< Available touch zones
 
 /**
  * @brief Driver for touch sensors
