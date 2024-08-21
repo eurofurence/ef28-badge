@@ -134,6 +134,26 @@ struct DisplayPrideFlag : public FSMState {
 };
 
 /**
+ * @brief Main state: Displays an animation
+ */
+struct DisplayAnimation : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual const unsigned int getTickRateMs() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+
+    void _animateRainbow();
+    void _animateKnightRider();
+    void _animateSnake();
+};
+
+/**
  * @brief Menu entry point
  */
 struct MenuMain : public FSMState {

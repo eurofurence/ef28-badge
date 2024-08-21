@@ -58,9 +58,9 @@ std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintRelease() 
 }
 
 std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintShortpress() {
-    return std::make_unique<MenuMain>();
+    return std::make_unique<DisplayPrideFlag>();
 }
 
 std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintLongpress() {
-    return std::make_unique<MenuMain>();
+    return std::make_unique<DisplayPrideFlag>();
 }

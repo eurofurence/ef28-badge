@@ -203,12 +203,12 @@ void loop() {
     }
 
     // Task: Blink LED
-    if (task_blinkled < millis()) {
-        EFLed.setDragonEarTop(blinkled_state ? CRGB::Green : CRGB::Black);
-        blinkled_state = !blinkled_state;
+    // if (task_blinkled < millis()) {
+    //     EFLed.setDragonEarTop(blinkled_state ? CRGB::Green : CRGB::Black);
+    //     blinkled_state = !blinkled_state;
 
-        task_blinkled = millis() + 1000;
-    }
+    //     task_blinkled = millis() + 1000;
+    // }
 
     // Task: Battery checks
     if (task_battery < millis()) {

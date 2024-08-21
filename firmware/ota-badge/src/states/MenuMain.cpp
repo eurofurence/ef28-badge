@@ -57,6 +57,7 @@ std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
     LOGF_DEBUG("(MenuMain) menuMainPointerIdx = %d\r\n", this->globals->menuMainPointerIdx);
     switch (this->globals->menuMainPointerIdx) {
         case 0: return std::make_unique<MenuPrideFlagSelector>();
+        case 1: return std::make_unique<DisplayAnimation>();
         default: return nullptr;
     }
 }

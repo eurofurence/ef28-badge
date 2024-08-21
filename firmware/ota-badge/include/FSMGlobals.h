@@ -30,8 +30,9 @@
 #include <Arduino.h>
 
 typedef struct {
-    uint8_t menuMainPointerIdx;
-    uint8_t prideFlagModeIdx;
+    uint8_t menuMainPointerIdx = 0;  //!< MenuMain: Index of the menu cursor
+    uint8_t prideFlagModeIdx = 0;    //!< DisplayPrideFlag: Mode selector
+    uint8_t animationModeIdx = 0;    //!< DisplayAnimation: Mode selector
 } FSMGlobals;
 
 #endif /* FSMGLOBALS_H_ */
