@@ -87,6 +87,20 @@ uint8_t EFLedClass::getBrightness() {
     return (uint8_t) round(FastLED.getBrightness() / (float) this->max_brightness * 100);
 }
 
+void EFLedClass::setAll(const CRGB color[EFLED_TOTAL_NUM]) {
+    for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
+        this->led_data[i] = color[i];
+    }
+    FastLED.show();
+}
+
+void EFLedClass::setAllSolid(const CRGB color) {
+    for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
+        this->led_data[i] = color;
+    }
+    FastLED.show();
+}
+
 void EFLedClass::setDragonNose(const CRGB color) {
     this->led_data[EFLED_DRAGON_NOSE_IDX] = color;
     FastLED.show();

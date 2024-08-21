@@ -116,6 +116,20 @@ class EFLedClass {
         uint8_t getBrightness();
 
         /**
+         * @brief Sets all LEDs according to the given color array
+         * 
+         * @param color Array of colors for each LED
+         */
+        void setAll(const CRGB color[EFLED_TOTAL_NUM]);
+
+        /**
+         * @brief Sets all LEDs to the given color
+         * 
+         * @param color Color to set
+         */
+        void setAllSolid(const CRGB color);
+
+        /**
          * @brief Sets the dragons nose LED to the given color
          * 
          * @param color Color to set
