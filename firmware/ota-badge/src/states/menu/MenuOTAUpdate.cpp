@@ -29,7 +29,6 @@
 #include <EFBoard.h>
 #include <EFLed.h>
 
-#include "constants.h"
 #include "secrets.h"
 
 #include "FSMState.h"

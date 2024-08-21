@@ -35,7 +35,6 @@
 #include <EFPrideFlags.h>
 #include <EFTouch.h>
 
-#include "constants.h"
 #include "FSM.h"
 #include "secrets.h"
 #include "util.h"
