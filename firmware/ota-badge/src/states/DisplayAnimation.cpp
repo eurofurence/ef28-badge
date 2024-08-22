@@ -39,7 +39,7 @@
 const struct {
     void (DisplayAnimation::* animate)();
     const unsigned int tickrate;
-} animations [DISPLAY_ANIMATION_NUM_TOTAL] = {
+} animations[DISPLAY_ANIMATION_NUM_TOTAL] = {
     {.animate = &DisplayAnimation::_animateRainbowCircle, .tickrate = 20},
     {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 100},
     {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 20},

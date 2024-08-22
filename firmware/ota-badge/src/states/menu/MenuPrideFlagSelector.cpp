@@ -31,11 +31,7 @@ const char* MenuPrideFlagSelector::getName() {
 }
 
 const unsigned int MenuPrideFlagSelector::getTickRateMs() {
-    if (this->globals->prideFlagModeIdx == 0) {
-        return 1000;
-    } else {
-        return 100;
-    }
+    return 20;
 }
 
 void MenuPrideFlagSelector::entry() {
@@ -54,6 +50,8 @@ void MenuPrideFlagSelector::exit() {
 
 std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintRelease() {
     this->globals->prideFlagModeIdx = (this->globals->prideFlagModeIdx + 1) % 13;
+    this->prideFlagDisplayRunner->entry();
+    this->prideFlagDisplayRunner->switchdelay_ms = 1000;
     return nullptr;
 }
 

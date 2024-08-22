@@ -123,11 +123,14 @@ class FSMState {
  * @brief Main state: Displays a pride flag
  */
 struct DisplayPrideFlag : public FSMState {
+    uint32_t tick = 0;
     uint8_t flagidx = 0;
+    unsigned int switchdelay_ms = 5000;
 
     virtual const char* getName() override;
     virtual const unsigned int getTickRateMs() override;
 
+    virtual void entry() override;
     virtual void run() override;
 
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
@@ -178,7 +181,7 @@ struct MenuMain : public FSMState {
  * @brief Sub-Menu: Pride flag selector
  */
 struct MenuPrideFlagSelector : public FSMState {
-    std::unique_ptr<FSMState> prideFlagDisplayRunner;
+    std::unique_ptr<DisplayPrideFlag> prideFlagDisplayRunner;
 
     virtual const char* getName() override;
     virtual const unsigned int getTickRateMs() override;

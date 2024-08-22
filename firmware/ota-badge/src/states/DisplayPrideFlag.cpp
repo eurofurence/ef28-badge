@@ -35,47 +35,76 @@ const char* DisplayPrideFlag::getName() {
 }
 
 const unsigned int DisplayPrideFlag::getTickRateMs() {
-    return 3000;
+    return 20;
+}
+
+void DisplayPrideFlag::entry() {
+    this->switchdelay_ms = 5000;
+    this->tick = 0;
 }
 
 void DisplayPrideFlag::run() {
-    switch(this->globals->prideFlagModeIdx) {
-        case 0:
+    // Determine pride flag to show
+    const CRGB* prideFlag = EFPrideFlags::LGBTQI;
+
+    if (this->globals->prideFlagModeIdx == 0) {
+        switch (flagidx) {
+            case 0: prideFlag = EFPrideFlags::LGBT; break;
+            case 1: prideFlag = EFPrideFlags::LGBTQI; break;
+            case 2: prideFlag = EFPrideFlags::Bisexual; break;
+            case 3: prideFlag = EFPrideFlags::Polyamorous; break;
+            case 4: prideFlag = EFPrideFlags::Polysexual; break;
+            case 5: prideFlag = EFPrideFlags::Transgender; break;
+            case 6: prideFlag = EFPrideFlags::Pansexual; break;
+            case 7: prideFlag = EFPrideFlags::Asexual; break;
+            case 8: prideFlag = EFPrideFlags::Genderfluid; break;
+            case 9: prideFlag = EFPrideFlags::Genderqueer; break;
+            case 10: prideFlag = EFPrideFlags::Nonbinary; break;
+            case 11: prideFlag = EFPrideFlags::Intersex; break;
+        }
+    } else {
+        switch(this->globals->prideFlagModeIdx) {
+            // Static flags
+            case 1: prideFlag = EFPrideFlags::LGBTQI; break;
+            case 2: prideFlag = EFPrideFlags::LGBT; break;
+            case 3: prideFlag = EFPrideFlags::Bisexual; break;
+            case 4: prideFlag = EFPrideFlags::Polyamorous; break;
+            case 5: prideFlag = EFPrideFlags::Polysexual; break;
+            case 6: prideFlag = EFPrideFlags::Transgender; break;
+            case 7: prideFlag = EFPrideFlags::Pansexual; break;
+            case 8: prideFlag = EFPrideFlags::Asexual; break;
+            case 9: prideFlag = EFPrideFlags::Genderfluid; break;
+            case 10: prideFlag = EFPrideFlags::Genderqueer; break;
+            case 11: prideFlag = EFPrideFlags::Nonbinary; break;
+            case 12: prideFlag = EFPrideFlags::Intersex; break;
+            default:
+                LOG_ERROR("(DisplayPrideFlag) Invalid prideFlagModeIdx!")
+                break;
+        }
+    }
+    
+    // Animate dragon
+    // TODO: Blend colors smoothely
+    std::vector<CRGB> rotatedflag(prideFlag, prideFlag + EFLED_EFBAR_NUM);
+    std::rotate(rotatedflag.begin(), rotatedflag.begin() + (this->tick % (EFLED_EFBAR_NUM*10)) / 10, rotatedflag.end());
+
+    CRGB dragon[EFLED_DRAGON_NUM];
+    std::copy(rotatedflag.begin(), rotatedflag.begin() + EFLED_DRAGON_NUM, dragon);
+    fadeLightBy(dragon, EFLED_DRAGON_NUM, 100);
+    EFLed.setDragon(dragon);
+
+    // Refresh flag
+    if (this->tick % (this->switchdelay_ms / this->getTickRateMs()) == 0) {
+        if (this->globals->prideFlagModeIdx == 0) {
             // Cycle through all flags
             LOGF_DEBUG("(DisplayPrideFlag) Switched pride flag to: %d\r\n", flagidx);
-            switch (flagidx) {
-                case 0: EFLed.setEFBar(EFPrideFlags::LGBT); break;
-                case 1: EFLed.setEFBar(EFPrideFlags::LGBTQI); break;
-                case 2: EFLed.setEFBar(EFPrideFlags::Bisexual); break;
-                case 3: EFLed.setEFBar(EFPrideFlags::Polyamorous); break;
-                case 4: EFLed.setEFBar(EFPrideFlags::Polysexual); break;
-                case 5: EFLed.setEFBar(EFPrideFlags::Transgender); break;
-                case 6: EFLed.setEFBar(EFPrideFlags::Pansexual); break;
-                case 7: EFLed.setEFBar(EFPrideFlags::Asexual); break;
-                case 8: EFLed.setEFBar(EFPrideFlags::Genderfluid); break;
-                case 9: EFLed.setEFBar(EFPrideFlags::Genderqueer); break;
-                case 10: EFLed.setEFBar(EFPrideFlags::Nonbinary); break;
-                case 11: EFLed.setEFBar(EFPrideFlags::Intersex); break;
-            }
             flagidx = (flagidx + 1) % 12;
-            break;
-        // Static flags
-        case 1: EFLed.setEFBar(EFPrideFlags::LGBT); break;
-        case 2: EFLed.setEFBar(EFPrideFlags::LGBTQI); break;
-        case 3: EFLed.setEFBar(EFPrideFlags::Bisexual); break;
-        case 4: EFLed.setEFBar(EFPrideFlags::Polyamorous); break;
-        case 5: EFLed.setEFBar(EFPrideFlags::Polysexual); break;
-        case 6: EFLed.setEFBar(EFPrideFlags::Transgender); break;
-        case 7: EFLed.setEFBar(EFPrideFlags::Pansexual); break;
-        case 8: EFLed.setEFBar(EFPrideFlags::Asexual); break;
-        case 9: EFLed.setEFBar(EFPrideFlags::Genderfluid); break;
-        case 10: EFLed.setEFBar(EFPrideFlags::Genderqueer); break;
-        case 11: EFLed.setEFBar(EFPrideFlags::Nonbinary); break;
-        case 12: EFLed.setEFBar(EFPrideFlags::Intersex); break;
-        default:
-            LOG_ERROR("(DisplayPrideFlag) Invalid prideFlagModeIdx!")
-            break;
+        }
+        EFLed.setEFBar(prideFlag);
     }
+
+    // Prepare next tick
+    this->tick++;
 }
 
 std::unique_ptr<FSMState> DisplayPrideFlag::touchEventFingerprintShortpress() {
