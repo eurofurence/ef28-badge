@@ -44,13 +44,21 @@ void DisplayPrideFlag::entry() {
 }
 
 void DisplayPrideFlag::run() {
+    // Check if we need to switch the flag (Mode: 0)
+    if (this->tick % (this->switchdelay_ms / this->getTickRateMs()) == 0) {
+        if (this->globals->prideFlagModeIdx == 0) {
+            // Cycle through all flags
+            LOGF_DEBUG("(DisplayPrideFlag) Switched pride flag to: %d\r\n", flagidx);
+            flagidx = (flagidx + 1) % 12;
+        }
+    }
+
     // Determine pride flag to show
     const CRGB* prideFlag = EFPrideFlags::LGBTQI;
-
     if (this->globals->prideFlagModeIdx == 0) {
         switch (flagidx) {
-            case 0: prideFlag = EFPrideFlags::LGBT; break;
-            case 1: prideFlag = EFPrideFlags::LGBTQI; break;
+            case 0: prideFlag = EFPrideFlags::LGBTQI; break;
+            case 1: prideFlag = EFPrideFlags::LGBT; break;
             case 2: prideFlag = EFPrideFlags::Bisexual; break;
             case 3: prideFlag = EFPrideFlags::Polyamorous; break;
             case 4: prideFlag = EFPrideFlags::Polysexual; break;
@@ -65,8 +73,8 @@ void DisplayPrideFlag::run() {
     } else {
         switch(this->globals->prideFlagModeIdx) {
             // Static flags
-            case 1: prideFlag = EFPrideFlags::LGBTQI; break;
-            case 2: prideFlag = EFPrideFlags::LGBT; break;
+            case 1: prideFlag = EFPrideFlags::LGBT; break;
+            case 2: prideFlag = EFPrideFlags::LGBTQI; break;
             case 3: prideFlag = EFPrideFlags::Bisexual; break;
             case 4: prideFlag = EFPrideFlags::Polyamorous; break;
             case 5: prideFlag = EFPrideFlags::Polysexual; break;
@@ -83,23 +91,26 @@ void DisplayPrideFlag::run() {
         }
     }
     
-    // Animate dragon
-    // TODO: Blend colors smoothely
+    // Animate dragon: Rotate current flag to cycle through dragon head
     std::vector<CRGB> rotatedflag(prideFlag, prideFlag + EFLED_EFBAR_NUM);
-    std::rotate(rotatedflag.begin(), rotatedflag.begin() + (this->tick % (EFLED_EFBAR_NUM*10)) / 10, rotatedflag.end());
+    std::rotate(rotatedflag.begin(), rotatedflag.begin() + (this->tick % (EFLED_EFBAR_NUM*20)) / 20, rotatedflag.end());
 
+    // Animate dragon: Create current and next dragon head patterns
     CRGB dragon[EFLED_DRAGON_NUM];
+    CRGB dragon_next[EFLED_DRAGON_NUM];
     std::copy(rotatedflag.begin(), rotatedflag.begin() + EFLED_DRAGON_NUM, dragon);
-    fadeLightBy(dragon, EFLED_DRAGON_NUM, 100);
-    EFLed.setDragon(dragon);
+    std::copy(rotatedflag.begin() + 1, rotatedflag.begin() + 1 + EFLED_DRAGON_NUM, dragon_next);
 
-    // Refresh flag
+    // Animate dragon: Blend both patterns based on current tick and reduce brightness
+    CRGB dragon_now[EFLED_DRAGON_NUM];
+    blend(dragon, dragon_next, dragon_now, EFLED_DRAGON_NUM, ((this->tick % 20) / 20.0) * 255);
+    fadeLightBy(dragon_now, EFLED_DRAGON_NUM, 128);
+
+    // Animate dragon: Finally show it!
+    EFLed.setDragon(dragon_now);
+
+    // Refresh flag periodically
     if (this->tick % (this->switchdelay_ms / this->getTickRateMs()) == 0) {
-        if (this->globals->prideFlagModeIdx == 0) {
-            // Cycle through all flags
-            LOGF_DEBUG("(DisplayPrideFlag) Switched pride flag to: %d\r\n", flagidx);
-            flagidx = (flagidx + 1) % 12;
-        }
         EFLed.setEFBar(prideFlag);
     }
 
