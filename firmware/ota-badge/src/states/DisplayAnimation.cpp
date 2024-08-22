@@ -30,15 +30,22 @@
 
 #include "FSMState.h"
 
-#define DISPLAY_ANIMATION_NUM_TOTAL 3
+#define DISPLAY_ANIMATION_NUM_TOTAL 5  //!< Number of available animations
 
 /**
- * @brief Tick rates of all animations in ms
+ * @brief Index of all animations, each consisting of a periodically called
+ * animation function and an associated tick rate in milliseconds.
  */
-const unsigned int animation_tick_rates[DISPLAY_ANIMATION_NUM_TOTAL] = {
-    250,
-    80,
-    80
+const struct {
+    void (DisplayAnimation::* animate)();
+    const unsigned int tickrate;
+} animations [DISPLAY_ANIMATION_NUM_TOTAL] = {
+    {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 100},
+    {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 20},
+    {.animate = &DisplayAnimation::_animateMatrix, .tickrate = 100},
+    {.animate = &DisplayAnimation::_animateKnightRider, .tickrate = 80},
+    {.animate = &DisplayAnimation::_animateSnake, .tickrate = 80}
+
 };
 
 const char* DisplayAnimation::getName() {
@@ -46,7 +53,7 @@ const char* DisplayAnimation::getName() {
 }
 
 const unsigned int DisplayAnimation::getTickRateMs() {
-    return animation_tick_rates[this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL];
+    return animations[this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL].tickrate;
 }
 
 void DisplayAnimation::entry() {
@@ -54,12 +61,7 @@ void DisplayAnimation::entry() {
 }
 
 void DisplayAnimation::run() {
-    switch (this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL) {
-        case 0: this->_animateRainbow(); break;
-        case 1: this->_animateKnightRider(); break;
-        case 2: this->_animateSnake(); break;
-    }
-
+    (*this.*(animations[this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL].animate))();
     this->tick++;
 }
 
@@ -81,7 +83,7 @@ std::unique_ptr<FSMState> DisplayAnimation::touchEventFingerprintShortpress() {
 }
 
 void DisplayAnimation::_animateRainbow() {
-    EFLed.setAllSolid(CHSV((tick % 64) * 4, 255, 255));
+    EFLed.setAllSolid(CHSV((tick % 256), 255, 255));
 }
 
 void DisplayAnimation::_animateKnightRider() {
@@ -131,4 +133,35 @@ void DisplayAnimation::_animateSnake() {
 
     std::rotate(pattern.rbegin(), pattern.rbegin()+this->tick % EFLED_TOTAL_NUM, pattern.rend());
     EFLed.setAll(pattern.data());
+}
+
+void DisplayAnimation::_animateMatrix() {
+    std::vector<CRGB> dragon = {
+        CRGB::Black,
+        CHSV(95, 255, 110),
+        CHSV(95, 255, 255),
+        CHSV(95, 255, 110),
+        CRGB::Black,
+        CRGB::Black
+    };
+
+    std::vector<CRGB> bar = {
+        CHSV(95, 255, 110),
+        CHSV(95, 255, 255),
+        CHSV(95, 255, 110),
+        CRGB::Black,
+        CRGB::Black,
+        CHSV(95, 255, 110),
+        CHSV(95, 255, 255),
+        CHSV(95, 255, 110),
+        CRGB::Black,
+        CRGB::Black,
+        CRGB::Black,
+    };
+
+    std::rotate(dragon.begin(), dragon.begin() + this->tick % EFLED_DRAGON_NUM, dragon.end());
+    std::rotate(bar.rbegin(), bar.rbegin() + this->tick % EFLED_EFBAR_NUM, bar.rend());
+
+    dragon.insert(dragon.end(), bar.begin(), bar.end());
+    EFLed.setAll(dragon.data());
 }

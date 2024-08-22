@@ -151,6 +151,7 @@ struct DisplayAnimation : public FSMState {
     void _animateRainbow();
     void _animateKnightRider();
     void _animateSnake();
+    void _animateMatrix();
 };
 
 /**
