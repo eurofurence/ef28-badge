@@ -148,10 +148,11 @@ struct DisplayAnimation : public FSMState {
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
 
-    void _animateRainbow();
     void _animateKnightRider();
-    void _animateSnake();
     void _animateMatrix();
+    void _animateRainbow();
+    void _animateRainbowCircle();
+    void _animateSnake();
 };
 
 /**

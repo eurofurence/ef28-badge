@@ -30,7 +30,7 @@
 
 #include "FSMState.h"
 
-#define DISPLAY_ANIMATION_NUM_TOTAL 5  //!< Number of available animations
+#define DISPLAY_ANIMATION_NUM_TOTAL 6  //!< Number of available animations
 
 /**
  * @brief Index of all animations, each consisting of a periodically called
@@ -40,6 +40,7 @@ const struct {
     void (DisplayAnimation::* animate)();
     const unsigned int tickrate;
 } animations [DISPLAY_ANIMATION_NUM_TOTAL] = {
+    {.animate = &DisplayAnimation::_animateRainbowCircle, .tickrate = 20},
     {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 100},
     {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 20},
     {.animate = &DisplayAnimation::_animateMatrix, .tickrate = 100},
@@ -164,4 +165,10 @@ void DisplayAnimation::_animateMatrix() {
 
     dragon.insert(dragon.end(), bar.begin(), bar.end());
     EFLed.setAll(dragon.data());
+}
+
+void DisplayAnimation::_animateRainbowCircle() {
+    CRGB data[EFLED_TOTAL_NUM];
+    fill_rainbow_circular(data, EFLED_TOTAL_NUM, (tick % 128)*2, true);
+    EFLed.setAll(data);
 }
