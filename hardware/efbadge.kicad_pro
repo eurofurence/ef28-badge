@@ -481,7 +481,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "r0.kicad_pro",
+    "filename": "efbadge.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -772,7 +772,7 @@
   "sheets": [
     [
       "feab91d4-ec7f-4c5a-9841-b2c110819bab",
-      "Stammblatt"
+      "Root"
     ]
   ],
   "text_variables": {}
