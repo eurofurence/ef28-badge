@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "EF_Badge_Library")(type "KiCad")(uri "${KIPRJMOD}/Design/EF_Badge_Library.pretty")(options "")(descr ""))
+)
