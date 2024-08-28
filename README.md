@@ -16,6 +16,9 @@ badge pulse with light as you move through the convention, the choice is yours.
 
 ## Technical Details
 
+You can find the full schematics and PCB files in the
+[Hardware Details](#hardware-details) section.
+
 - Height: 15.9 cm
 - Width: 7.7 cm
 - Weight (w/o batteries): 56 g
@@ -150,6 +153,20 @@ To flash a badge using OTA, you need to:
 6. Wait for the flashing to finish. The badge will display the OTA progress
    using the LED bar, and the dragon eye will flash three times after a
    successful OTA update.
+
+
+# Hardware Details
+
+All hardware details, schematics, and PCB files of the badge are released as
+[Open Source Hardware](https://www.oshwa.org/). Feel free to share, use, remix,
+and extend them to your likings.
+
+You can find the full [KiCad](https://www.kicad.org/) files inside the
+`hardware` directory.
+
+For convenience, here is an exported PDF version of the schematics:
+
+[![Screenshot: Schematics thumbnail](docs/assets/efbadge-schematic_thumb.png)](hardware/efbadge-schematic.pdf)
 
 
 # Credits
