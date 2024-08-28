@@ -82,6 +82,15 @@ may need to be downloaded_
 
 ![Screenshot: Building the firmware using VS Code](docs/assets/vscode_build.png)
 
+**Using PlatformUI from the CLI**:
+
+You can archive most things with the `pio` command from PlatformIO.
+
+* Build firmware: `pio run`
+* Upload firmware: `pio run --target upload`
+* Clean generated files: `pio run --target clean`
+* Attach serial monitor: `pio device monitor`
+
 
 ## Component Overview
 
