@@ -1,0 +1,29 @@
+name: "Test"
+
+on:
+  push:
+    tags-ignore: [ "v[0-9]+.[0-9]+.[0-9]+.*", "trigger-push" ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - uses: "actions/cache@v4"
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: "${{ runner.os }}-pio"
+
+      - uses: "actions/setup-python@v4"
+        with:
+          python-version: "3.12"
+
+      - name: "Install PlatformIO Core"
+        run: "pip install --upgrade platformio"
+
+      - name: "Build PlatformIO Project"
+        run: "pio run"
