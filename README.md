@@ -79,7 +79,7 @@ To set up your development environment, you need to:
 5. Check that your build was successful (2)
 
 _Note: The first build can take a while since additional tools and libraries
-may neet to be downloaded_
+may need to be downloaded_
 
 ![Screenshot: Building the firmware using VS Code](docs/assets/vscode_build.png)
 
