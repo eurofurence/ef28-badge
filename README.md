@@ -70,12 +70,12 @@ beginners to quickly get hacking.
 To set up your development environment, you need to:
 
 1. Install Visual Studio Code and PlatformIO, as described in the official
-[PlatformIO documentation](https://docs.platformio.org/en/latest/integration/ide/vscode.html#installation)
+   [PlatformIO documentation](https://docs.platformio.org/en/latest/integration/ide/vscode.html#installation)
 2. Clone this repository to a suitable location (here: `~/git/ef28-badge`)
 3. Open the project under `~/git/ef28-badge` using the PlatformIO IDE
 4. Copy `include/secrets.h.dist` to `include/secrets.h` and adjust as needed
 4. Execute the build by pressing the build button (1) or using the hotkey
-(`CTRL + ALT + B`)
+   (`CTRL + ALT + B`)
 5. Check that your build was successful (2)
 
 _Note: The first build can take a while since additional tools and libraries
@@ -114,7 +114,7 @@ After you've built your firmware, you can flash it by either connecting the
 badge via USB to your computer, or by using over-the-air (OTA) updates.
 
 _Note: OTA updates are only supported after an initial flash using a USB
-connection_ 
+connection_
 
 
 ### USB
@@ -143,11 +143,11 @@ To flash a badge using OTA, you need to:
 
 1. Make sure to have the correct Wi-Fi credentials supplied in `include/secrets.h`
 2. Determine the badge IP address
-   - This can be done by connecting your badge to your computer, opening the
-     serial monitor, and letting it connect to your Wi-Fi. After a successful
-     connection, the badge will print its IP and MAC addresses to the serial console.
+    - This can be done by connecting your badge to your computer, opening the
+      serial monitor, and letting it connect to your Wi-Fi. After a successful
+      connection, the badge will print its IP and MAC addresses to the serial console.
 3. Uncomment all `upload_*` entries in your `platformio.ini` and adjust
-  `upload_port` to the IP address of your badge.
+   `upload_port` to the IP address of your badge.
 4. Ensure that the badge is in OTA mode
 5. Click the upload button or use the hotkey (`CTRL + ALT + U`)
 6. Wait for the flashing to finish. The badge will display the OTA progress
@@ -180,7 +180,7 @@ by: DarkRat, Token, Irah, Honigeintopf. The wonderful artwork is done by
 
 MIT License
 
-Copyright 2024 Eurofurence e.V. 
+Copyright 2024 Eurofurence e.V.
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the “Software”),

@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright 2024 Eurofurence e.V. 
+Copyright 2024 Eurofurence e.V.
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the “Software”),
