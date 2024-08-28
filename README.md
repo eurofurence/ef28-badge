@@ -74,12 +74,11 @@ To set up your development environment, you need to:
 2. Clone this repository to a suitable location (here: `~/git/ef28-badge`)
 3. Open the project under `~/git/ef28-badge` using the PlatformIO IDE
 4. Copy `include/secrets.h.dist` to `include/secrets.h` and adjust as needed
-4. Execute the build by pressing the build button (1) or using the hotkey
-   (`CTRL + ALT + B`)
-5. Check that your build was successful (2)
+5. Execute the build by pressing the build button (1) or using the hotkey (`CTRL + ALT + B`)
+6. Check that your build was successful (2)
 
 _Note: The first build can take a while since additional tools and libraries
-may neet to be downloaded_
+may need to be downloaded_
 
 ![Screenshot: Building the firmware using VS Code](docs/assets/vscode_build.png)
 
