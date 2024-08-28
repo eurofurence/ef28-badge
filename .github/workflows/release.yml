@@ -1,0 +1,21 @@
+name: "release"
+
+on:
+  push:
+    tags: [ "v[0-9]+.[0-9]+.[0-9]+.*", "trigger-push" ]
+
+jobs:
+  push:
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: "write"
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Create a Release"
+        uses: "elgohr/Github-Release-Action@v5"
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          title: "EF28 Badge Firmware Release"
