@@ -180,14 +180,14 @@ class EFLedClass {
         void setDragonEarTop(CRGB color);
 
         /**
-         * @brief Sets all of the dragon LEDs to the given colors
+         * @brief Sets all the dragon LEDs to the given colors
          * 
          * @param color Array of colors to set
          */
         void setDragon(const CRGB color[EFLED_DRAGON_NUM]);
 
         /**
-         * @brief Sets all of the EF bar LEDs to the given colors
+         * @brief Sets all the EF bar LEDs to the given colors
          * 
          * @param color Array of colors to set
          */
