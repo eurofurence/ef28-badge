@@ -73,8 +73,11 @@ void EFBoardClass::setup() {
     const EFBoardPowerState pwrstate = this->getPowerState();
     if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
         LOGF_ERROR("(EFBoard) HARD BROWN OUT DETECTED (V_BAT = %.2f V). Panic!\r\n", this->getBatteryVoltage());
-        while(1) {
-            delay(1000);
+        while (1) {
+            // TODO: use actual hard brownout code here
+            // sleep most of the time.
+            esp_sleep_enable_timer_wakeup(5 * 1000000);
+            esp_light_sleep_start();
         }
     } else if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
         LOGF_WARNING("(EFBoard) Soft brown out detected (V_BAT = %.2f V)\r\n", this->getBatteryVoltage());
