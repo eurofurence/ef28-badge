@@ -55,7 +55,8 @@ void EFLedClass::init(const uint8_t max_brightness) {
     FastLED.setBrightness(this->max_brightness);
     LOGF_DEBUG("(EFLed) Set max_brightness=%d\r\n", this->max_brightness)
 
-    this->enablePower();
+    enablePower();
+
 }
 
 void EFLedClass::enablePower() {
@@ -78,12 +79,12 @@ void EFLedClass::clear() {
     FastLED.show();
 }
 
-void EFLedClass::setBrightness(uint8_t brightness) {
+void EFLedClass::setBrightness(uint8_t brightness) const {
     FastLED.setBrightness(round((min(brightness, (uint8_t) 100) / (float) 100) * this->max_brightness));
     FastLED.show();
 }
 
-uint8_t EFLedClass::getBrightness() {
+uint8_t EFLedClass::getBrightness() const {
     return (uint8_t) round(FastLED.getBrightness() / (float) this->max_brightness * 100);
 }
 
