@@ -35,6 +35,14 @@
 #define EFLED_PIN_LED_DATA 21
 #define EFLED_PIN_5VBOOST_ENABLE 9
 
+/**
+ * @brief Initial value for global maximum for the LED brightness, 0–255
+ * Has a huge impact on battery life.
+ *
+ * WARNING: The 5V boost converter is unable to power all LEDs on a high brightness level! Max brightness of 255 works
+ * only, if only a few LEDs are used at the same time. When using all LEDs even in a single color, values over 60 can
+ * overwhelm it and cause the colors to glitch. To be safe, choose a value below 50!
+ */
 #define EFLED_MAX_BRIGHTNESS_DEFAULT 50
 
 #define EFLED_TOTAL_NUM 17
@@ -102,7 +110,7 @@ class EFLedClass {
         void clear();
 
         /**
-         * @brief Sets the global brightness for all LEDs
+         * @brief Sets the global brightness for all LEDs within range of the defined max brightness
          * 
          * @param brightness Value between 0 (off) and 100 (high)
          */
@@ -197,7 +205,7 @@ class EFLedClass {
          * @brief Sets a single LED of the EFBar to one color and the remaining LEDs
          * to another color
          * 
-         * @param idx Number of the led to set active (from top to bottom)
+         * @param idx Number of the LED to set active (from top to bottom)
          * @param color_on Color to use for active LEDs
          * @param color_off Color to use for inactive LEDs
          */

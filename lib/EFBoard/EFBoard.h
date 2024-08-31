@@ -72,7 +72,7 @@ class EFBoardClass {
         unsigned int getWakeupCount();
 
         /**
-         * @brief Retrieves the cause for the last wakeup in a human readable form.
+         * @brief Retrieves the cause for the last wakeup in a human-readable form.
          * 
          * @return Wakeup reason as string
          */
@@ -126,16 +126,16 @@ class EFBoardClass {
         const EFBoardPowerState resetPowerState();
 
         /**
-         * @brief Tries to connect to the given Wifi access point
+         * @brief Tries to connect to the given WiFi access point
          * 
-         * @param ssid SSID of the Wifi network to connect to
-         * @param password WPA2 password for the Wifi network
+         * @param ssid SSID of the WiFi network to connect to
+         * @param password WPA2 password for the WiFi network
          * @return True, if the connection was successful
          */
         bool connectToWifi(const char* ssid, const char* password);
 
         /**
-         * @brief Disconnects from any wifi network and disables the radio modem
+         * @brief Disconnects from any WiFi network and disables the radio modem
          * 
          * @return True if the radio modem was sucessfully disabled
          */
