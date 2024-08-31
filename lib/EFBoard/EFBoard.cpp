@@ -67,7 +67,7 @@ void EFBoardClass::setup() {
     analogReadResolution(12);
     LOG_DEBUG("(EFBoard) Set ADC read resolution to: 12 bit");
     pinMode(EFBOARD_PIN_VBAT, INPUT);
-    LOG_INFO("(EFBoard) Inizialized battery sense ADC")
+    LOG_INFO("(EFBoard) Initialized battery sense ADC")
 
     // Check power state
     const EFBoardPowerState pwrstate = this->getPowerState();
