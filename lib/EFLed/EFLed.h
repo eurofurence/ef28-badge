@@ -114,7 +114,7 @@ class EFLedClass {
          * 
          * @param brightness Value between 0 (off) and 100 (high)
          */
-        void setBrightness(uint8_t brightness) const;
+        void setBrightness(uint8_t brightness);
 
         /**
          * @brief Retrieves the current global brightness value

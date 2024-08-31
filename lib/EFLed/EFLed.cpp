@@ -79,7 +79,7 @@ void EFLedClass::clear() {
     FastLED.show();
 }
 
-void EFLedClass::setBrightness(uint8_t brightness) const {
+void EFLedClass::setBrightness(uint8_t brightness) {
     FastLED.setBrightness(round((min(brightness, (uint8_t) 100) / (float) 100) * this->max_brightness));
     FastLED.show();
 }
