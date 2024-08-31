@@ -116,7 +116,7 @@ void _softBrownOutHandler() {
     EFLed.enablePower();
     EFLed.setBrightness(50);
 
-    // Soft brown out can only be cleared by board reset but can escallate to hard brown out
+    // Soft brown out can only be cleared by board reset but can escalate to hard brown out
     while (1) {
         // Check for hard brown out
         pwrstate = EFBoard.updatePowerState();
