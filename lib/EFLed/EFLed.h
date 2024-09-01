@@ -92,7 +92,7 @@ class EFLedClass {
          * @param max_brightness Maximum raw brightness (0-255) the LEDs will
          * be allowed to be set to.
          */
-        void init(uint8_t max_brightness);
+        void init(const uint8_t max_brightness);
 
         /**
          * @brief Enables the +5V power domain
@@ -114,7 +114,7 @@ class EFLedClass {
          * 
          * @param brightness Value between 0 (off) and 100 (high)
          */
-        void setBrightness(uint8_t brightness);
+        void setBrightness(const uint8_t brightness);
 
         /**
          * @brief Retrieves the current global brightness value
@@ -135,49 +135,49 @@ class EFLedClass {
          * 
          * @param color Color to set
          */
-        void setAllSolid(CRGB color);
+        void setAllSolid(const CRGB color);
 
         /**
          * @brief Sets the dragons nose LED to the given color
          * 
          * @param color Color to set
          */
-        void setDragonNose(CRGB color);
+        void setDragonNose(const CRGB color);
 
         /**
          * @brief Sets the dragons muzzle LED to the given color
          * 
          * @param color Color to set
          */
-        void setDragonMuzzle(CRGB color);
+        void setDragonMuzzle(const CRGB color);
 
         /**
          * @brief Sets the dragons eye LED to the given color
          * 
          * @param color Color to set
          */
-        void setDragonEye(CRGB color);
+        void setDragonEye(const CRGB color);
 
         /**
          * @brief Sets the dragons cheek LED to the given color
          * 
          * @param color Color to set
          */
-        void setDragonCheek(CRGB color);
+        void setDragonCheek(const CRGB color);
 
         /**
          * @brief Sets the dragons bottom ear LED to the given color
          * 
          * @param color Color to set
          */
-        void setDragonEarBottom(CRGB color);
+        void setDragonEarBottom(const CRGB color);
 
         /**
          * @brief Sets the dragons top ear LED to the given color
          * 
          * @param color Color to set
          */
-        void setDragonEarTop(CRGB color);
+        void setDragonEarTop(const CRGB color);
 
         /**
          * @brief Sets all the dragon LEDs to the given colors
@@ -199,7 +199,7 @@ class EFLedClass {
          * @param idx Number of the led to set (from top to bottom)
          * @param color Color to set
          */
-        void setEFBar(uint8_t idx, CRGB color);
+        void setEFBar(uint8_t idx, const CRGB color);
 
         /**
          * @brief Sets a single LED of the EFBar to one color and the remaining LEDs
@@ -209,7 +209,7 @@ class EFLedClass {
          * @param color_on Color to use for active LEDs
          * @param color_off Color to use for inactive LEDs
          */
-        void setEFBarCursor(uint8_t idx, CRGB color_on, CRGB color_off);
+        void setEFBarCursor(uint8_t idx, const CRGB color_on, const CRGB color_off);
 
         /**
          * @brief Fills the whole EF LED bar according to the given percentage.
@@ -219,7 +219,7 @@ class EFLedClass {
          * @param color_on Color to use for active LEDs
          * @param color_off Color to use for inactive LEDs
          */
-        void fillEFBarProportionally(uint8_t percent, CRGB color_on, CRGB color_off);
+        void fillEFBarProportionally(uint8_t percent, const CRGB color_on, const CRGB color_off);
 
 };
 
