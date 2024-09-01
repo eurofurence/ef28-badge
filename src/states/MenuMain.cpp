@@ -29,7 +29,7 @@
 
 #include "FSMState.h"
 
-const char* MenuMain::getName() {
+const char *MenuMain::getName() {
     return "MenuMain";
 }
 
