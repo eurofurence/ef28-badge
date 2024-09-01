@@ -27,6 +27,7 @@
 #include <EFLed.h>
 #include <EFLogging.h>
 #include <EFPrideFlags.h>
+#include <vector>
 
 #include "FSMState.h"
 
@@ -37,7 +38,7 @@
  * animation function and an associated tick rate in milliseconds.
  */
 const struct {
-    void (AnimateSnake::* animate)();
+    void (AnimateSnake::*animate)();
     const unsigned int tickrate;
 } animations[ANIMATE_SNAKE_NUM_TOTAL] = {
     {.animate = &AnimateSnake::_animateSnake, .tickrate = 80},
@@ -128,7 +129,7 @@ void AnimateSnake::_animateSnake() {
         CRGB::Black,
     };
 
-    std::rotate(pattern.rbegin(), pattern.rbegin()+this->tick % EFLED_TOTAL_NUM, pattern.rend());
+    std::rotate(pattern.rbegin(), pattern.rbegin() + this->tick % EFLED_TOTAL_NUM, pattern.rend());
     EFLed.setAll(pattern.data());
 }
 

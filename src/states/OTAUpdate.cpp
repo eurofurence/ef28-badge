@@ -38,7 +38,7 @@ const char* OTAUpdate::getName() {
 }
 
 void OTAUpdate::entry() {
-    // Connecto to wifi
+    // Connect to WiFi
     EFLed.setDragonNose(CRGB::Red);
     if (EFBoard.connectToWifi(WIFI_SSID, WIFI_PASSWORD)) {
         EFLed.setDragonNose(CRGB::Green);

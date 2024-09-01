@@ -56,7 +56,6 @@ void EFLedClass::init(const uint8_t max_brightness) {
     LOGF_DEBUG("(EFLed) Set max_brightness=%d\r\n", this->max_brightness)
 
     enablePower();
-
 }
 
 void EFLedClass::enablePower() {
