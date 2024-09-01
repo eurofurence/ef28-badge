@@ -42,7 +42,6 @@
 // Global objects and states
 FSM fsm(10);
 EFBoardPowerState pwrstate;
-bool blinkled_state = false;
 
 // Task counters
 unsigned long task_fsm_handle = 0;
@@ -84,11 +83,22 @@ void _hardBrownOutHandler() {
         EFBoard.getBatteryVoltage()
     );
     EFBoard.disableWifi();
-    EFLed.disablePower();
+    // Try getting the LEDs into some known state
+    EFLed.setBrightness(20);
+    EFLed.clear();
+    EFLed.setDragonNose(CRGB::Red);
 
     // Hard brown out can only be cleared by board reset
     while (1) {
-        delay(1000);
+        // Low brightness blink every few seconds
+        EFLed.enablePower();
+        EFLed.setDragonNose(CRGB::Red);
+        esp_sleep_enable_timer_wakeup(80 * 1000);  // in ms
+        EFLed.disablePower();
+        // sleep most of the time.
+        esp_sleep_enable_timer_wakeup(4 * 1000000);
+        esp_light_sleep_start();
+        // TODO: Go to deep sleep, but save the reason so when waking up, we can blink and deep sleep again
     }
 }
 
@@ -106,7 +116,7 @@ void _softBrownOutHandler() {
     EFLed.enablePower();
     EFLed.setBrightness(50);
 
-    // Soft brown out can only be cleared by board reset but can escallate to hard brown out
+    // Soft brown out can only be cleared by board reset but can escalate to hard brown out
     while (1) {
         // Check for hard brown out
         pwrstate = EFBoard.updatePowerState();
@@ -116,9 +126,13 @@ void _softBrownOutHandler() {
 
         // Blink LED to signal brown out to user
         for (uint8_t n = 0; n < 30; n++) {
-            EFLed.setDragonNose(blinkled_state ? CRGB::Red : CRGB::Black);
-            blinkled_state = !blinkled_state;
-            delay(1000);
+            EFLed.enablePower();
+            EFLed.setDragonNose(CRGB::Red);
+            esp_sleep_enable_timer_wakeup(200 * 1000);
+            esp_light_sleep_start();
+            EFLed.disablePower();
+            esp_sleep_enable_timer_wakeup(800 * 1000);
+            esp_light_sleep_start();
         }
 
         // Log current battery level
@@ -136,7 +150,7 @@ void _softBrownOutHandler() {
 void setup() {
     // Init board
     EFBoard.setup();
-    EFLed.init(16);
+    EFLed.init(30);
     
     // Touchy stuff
     EFTouch.init();

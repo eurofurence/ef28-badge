@@ -34,13 +34,14 @@
 #define EFBOARD_SERIAL_DEVICE USBSerial    //!< Serial device to use for logging
 #define EFBOARD_SERIAL_BAUD 115200         //!< Baudrate for the serial device
 
+// The Step-Down converter still manages to hold 3.00V with 3,32V input. The ESP needs 3.0V at least
 #define EFBOARD_PIN_VBAT 10                //!< Pin the analog voltage divider for V_BAT is connected to
 #define EFBOARD_NUM_BATTERIES 3            //!< Number of battery cells used for V_BAT
 #define EFBOARD_VBAT_MAX (1.60 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered full
-#define EFBOARD_VBAT_MIN (1.16 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
+#define EFBOARD_VBAT_MIN (1.12 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
 
 #define EFBOARD_BROWN_OUT_SOFT EFBOARD_VBAT_MIN //!< V_BAT threshold after which a soft brown out is triggered
-#define EFBOARD_BROWN_OUT_HARD 3.35             //!< V_BAT threshold after which a hard brown out is triggered
+#define EFBOARD_BROWN_OUT_HARD 3.30             //!< V_BAT threshold after which a hard brown out is triggered
 
 
 /**
@@ -72,7 +73,7 @@ class EFBoardClass {
         unsigned int getWakeupCount();
 
         /**
-         * @brief Retrieves the cause for the last wakeup in a human readable form.
+         * @brief Retrieves the cause for the last wakeup in a human-readable form.
          * 
          * @return Wakeup reason as string
          */
@@ -126,16 +127,16 @@ class EFBoardClass {
         const EFBoardPowerState resetPowerState();
 
         /**
-         * @brief Tries to connect to the given Wifi access point
+         * @brief Tries to connect to the given WiFi access point
          * 
-         * @param ssid SSID of the Wifi network to connect to
-         * @param password WPA2 password for the Wifi network
+         * @param ssid SSID of the WiFi network to connect to
+         * @param password WPA2 password for the WiFi network
          * @return True, if the connection was successful
          */
         bool connectToWifi(const char* ssid, const char* password);
 
         /**
-         * @brief Disconnects from any wifi network and disables the radio modem
+         * @brief Disconnects from any WiFi network and disables the radio modem
          * 
          * @return True if the radio modem was sucessfully disabled
          */
