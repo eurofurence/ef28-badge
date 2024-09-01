@@ -38,10 +38,10 @@
 #define EFBOARD_PIN_VBAT 10                //!< Pin the analog voltage divider for V_BAT is connected to
 #define EFBOARD_NUM_BATTERIES 3            //!< Number of battery cells used for V_BAT
 #define EFBOARD_VBAT_MAX (1.60 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered full
-#define EFBOARD_VBAT_MIN (1.11 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
+#define EFBOARD_VBAT_MIN (1.12 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
 
 #define EFBOARD_BROWN_OUT_SOFT EFBOARD_VBAT_MIN //!< V_BAT threshold after which a soft brown out is triggered
-#define EFBOARD_BROWN_OUT_HARD 3.29             //!< V_BAT threshold after which a hard brown out is triggered
+#define EFBOARD_BROWN_OUT_HARD 3.30             //!< V_BAT threshold after which a hard brown out is triggered
 
 
 /**
