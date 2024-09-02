@@ -30,7 +30,7 @@
 
 EFTouchClass::EFTouchClass()
 : pin_fingerprint(EFTOUCH_PIN_TOUCH_FINGERPRINT)
-, pin_nose(EFTOUCH_PIN_TOUCH_FINGERPRINT)
+, pin_nose(EFTOUCH_PIN_TOUCH_NOSE)
 , detection_step(10000)
 , noise_fingerprint(0)
 , noise_nose(0)
