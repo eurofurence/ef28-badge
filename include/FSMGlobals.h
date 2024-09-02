@@ -37,6 +37,7 @@
  * FSM::persistGlobals() and FSM::restoreGlobals() respectively.
  */
 typedef struct {
+    const char* lastRememberedState = "DisplayPrideFlag";  //!< Name of the state that should be resumed upon reboot
     uint8_t menuMainPointerIdx = 0;  //!< MenuMain: Index of the menu cursor
     uint8_t prideFlagModeIdx = 0;    //!< DisplayPrideFlag: Mode selector
     uint8_t animationModeIdx = 0;    //!< DisplayAnimation: Mode selector

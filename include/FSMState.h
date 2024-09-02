@@ -62,6 +62,14 @@ class FSMState {
         virtual const char* getName();
 
         /**
+         * @brief If true, the FSM will persist this state and resume to it after
+         * reboot, if no other transition to another rememberable state happened since
+         * 
+         * @return True, if the FSM should remember this state and resume to it upon reboot
+         */
+        virtual bool shouldBeRemembered();
+
+        /**
          * @brief Provides access to the tick rate of this state
          * 
          * @return Number of milliseconds this state wishes it's run() method to
@@ -135,6 +143,7 @@ struct DisplayPrideFlag : public FSMState {
     unsigned int switchdelay_ms = 5000;
 
     virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
     virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;
@@ -150,6 +159,7 @@ struct DisplayAnimation : public FSMState {
     uint32_t tick = 0;
 
     virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
     virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;

@@ -73,6 +73,18 @@ class FSM {
         ~FSM();
 
         /**
+         * @brief Resumes the FSM to the last state according to NVS data
+         */
+        void resume();
+
+        /**
+         * @brief Performs a transition to the given next state
+         * 
+         * @param next The state to transition to.
+         */
+        void transition(std::unique_ptr<FSMState> next);
+
+        /**
          * @brief Retrieves the tick rate of this FSM
          * 
          * @return Tick rate in milliseconds

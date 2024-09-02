@@ -53,6 +53,10 @@ const char* DisplayAnimation::getName() {
     return "DisplayAnimation";
 }
 
+bool DisplayAnimation::shouldBeRemembered() {
+    return true;
+}
+
 const unsigned int DisplayAnimation::getTickRateMs() {
     return animations[this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL].tickrate;
 }

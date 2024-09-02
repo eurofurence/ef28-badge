@@ -151,7 +151,6 @@ void setup() {
     // Init board
     EFBoard.setup();
     EFLed.init(30);
-    fsm.restoreGlobals();
     
     // Touchy stuff
     EFTouch.init();
@@ -163,6 +162,9 @@ void setup() {
     EFTouch.attachInterruptOnRelease(EFTouchZone::Nose, isr_noseRelease);
     EFTouch.attachInterruptOnShortpress(EFTouchZone::Nose, isr_noseShortpress);
     EFTouch.attachInterruptOnLongpress(EFTouchZone::Nose, isr_noseLongpress);
+    
+    // Get FSM going
+    fsm.resume();
 }
 
 /**

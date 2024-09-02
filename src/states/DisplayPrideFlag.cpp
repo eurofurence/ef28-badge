@@ -34,6 +34,10 @@ const char* DisplayPrideFlag::getName() {
     return "DisplayPrideFlag";
 }
 
+bool DisplayPrideFlag::shouldBeRemembered() {
+    return true;
+}
+
 const unsigned int DisplayPrideFlag::getTickRateMs() {
     return 20;
 }

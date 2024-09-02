@@ -34,6 +34,10 @@ bool FSMState::isGlobalsDirty() {
     return this->is_globals_dirty;
 }
 
+bool FSMState::shouldBeRemembered() {
+    return false;
+}
+
 const char* FSMState::getName() {
     return "FSMState";
 }
