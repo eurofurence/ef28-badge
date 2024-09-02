@@ -50,8 +50,11 @@ void MenuPrideFlagSelector::exit() {
 
 std::unique_ptr<FSMState> MenuPrideFlagSelector::touchEventFingerprintRelease() {
     this->globals->prideFlagModeIdx = (this->globals->prideFlagModeIdx + 1) % 13;
+    this->is_globals_dirty = true;
+
     this->prideFlagDisplayRunner->entry();
     this->prideFlagDisplayRunner->switchdelay_ms = 1000;
+
     return nullptr;
 }
 

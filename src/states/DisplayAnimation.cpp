@@ -53,6 +53,10 @@ const char* DisplayAnimation::getName() {
     return "DisplayAnimation";
 }
 
+bool DisplayAnimation::shouldBeRemembered() {
+    return true;
+}
+
 const unsigned int DisplayAnimation::getTickRateMs() {
     return animations[this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL].tickrate;
 }
@@ -68,6 +72,7 @@ void DisplayAnimation::run() {
 
 std::unique_ptr<FSMState> DisplayAnimation::touchEventFingerprintRelease() {
     this->globals->animationModeIdx++;
+    this->is_globals_dirty = true;
     this->tick = 0;
     EFLed.clear();
 

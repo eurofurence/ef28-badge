@@ -25,6 +25,7 @@
  */
 
 #include <Arduino.h>
+#include <Preferences.h>
 
 #include <EFLogging.h>
 
@@ -38,11 +39,52 @@ FSM::FSM(unsigned int tickrate_ms)
     this->globals = std::make_shared<FSMGlobals>();
     this->state = std::make_unique<DisplayPrideFlag>();
     this->state->attachGlobals(this->globals);
-    this->state->entry();
 }
 
 FSM::~FSM() {
     this->state->exit();
+}
+
+void FSM::resume() {
+    this->restoreGlobals();
+    
+    if (strcmp(this->globals->lastRememberedState, "DisplayPrideFlag") == 0) {
+        this->transition(std::make_unique<DisplayPrideFlag>());
+        return;
+    }
+
+    if (strcmp(this->globals->lastRememberedState, "DisplayAnimation") == 0) {
+        this->transition(std::make_unique<DisplayAnimation>());
+        return;
+    }
+
+    LOGF_WARNING("(FSM) Failed to resume to unknown state: %s\r\n", this->globals->lastRememberedState);
+    this->transition(std::make_unique<DisplayPrideFlag>());
+}
+
+void FSM::transition(std::unique_ptr<FSMState> next) {
+    if (next == nullptr) {
+        LOG_WARNING("(FSM) Failed to transition to null state. Aborting.");
+        return;
+    }
+
+    // State exit
+    LOGF_INFO("(FSM) Transition %s -> %s\r\n", this->state->getName(), next->getName());
+    this->state->exit();
+
+    // Persist globals if state dirtied it or next state wants to be persisted
+    if (next->shouldBeRemembered()) {
+        this->globals->lastRememberedState = next->getName();
+    }
+    if (this->state->isGlobalsDirty() || next->shouldBeRemembered()) {
+        this->persistGlobals();
+    }
+
+    // Transition to next state
+    this->state = std::move(next);
+    this->state->attachGlobals(this->globals);
+    this->state_last_run = 0;
+    this->state->entry();
 }
 
 unsigned int FSM::getTickRateMs() {
@@ -147,12 +189,35 @@ void FSM::handle(unsigned int num_events) {
 
         // Handle state transition
         if (next != nullptr) {
-            LOGF_INFO("(FSM) Transition %s -> %s\r\n", this->state->getName(), next->getName());
-            this->state->exit();
-            this->state = std::move(next);
-            this->state->attachGlobals(this->globals);
-            this->state_last_run = 0;
-            this->state->entry();
+            this->transition(move(next));
         }
     }
+}
+
+void FSM::persistGlobals() {
+    Preferences pref;
+    pref.begin(this->NVS_NAMESPACE, false);
+    LOGF_INFO("(FSM) Persisting FSM state data to NVS area: %s\r\n", this->NVS_NAMESPACE);
+    pref.clear();
+    LOG_DEBUG("(FSM)  -> Clear storage area");
+    pref.putString("resumeState", this->globals->lastRememberedState);
+    LOGF_DEBUG("(FSM)  -> resumeState = %s\r\n", this->globals->lastRememberedState);
+    pref.putUInt("prideFlagMode", this->globals->prideFlagModeIdx);
+    LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
+    pref.putUInt("animationMode", this->globals->animationModeIdx);
+    LOGF_DEBUG("(FSM)  -> animationMode = %d\r\n", this->globals->animationModeIdx);
+    pref.end();
+}
+
+void FSM::restoreGlobals() {
+    Preferences pref;
+    pref.begin(this->NVS_NAMESPACE, true);
+    LOGF_INFO("(FSM) Restored FSM state data from NVS area: %s\r\n", this->NVS_NAMESPACE);
+    this->globals->lastRememberedState = pref.getString("resumeState", "DisplayPrideFlag").c_str();
+    LOGF_DEBUG("(FSM)  -> resumeState = %s\r\n", this->globals->lastRememberedState);
+    this->globals->prideFlagModeIdx = pref.getUInt("prideFlagMode", 0);
+    LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
+    this->globals->animationModeIdx = pref.getUInt("animationMode", 0);
+    LOGF_DEBUG("(FSM)  -> animationMode = %d\r\n", this->globals->animationModeIdx);
+    pref.end();
 }

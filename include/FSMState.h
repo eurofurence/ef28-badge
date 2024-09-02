@@ -40,6 +40,7 @@ class FSMState {
     protected:
     
         std::shared_ptr<FSMGlobals> globals;  //!< Pointer to global FSM state variables
+        bool is_globals_dirty;                //!< Marks globals as dirty, causing it to be persisted to NVS
 
     public:
         /**
@@ -48,11 +49,25 @@ class FSMState {
         void attachGlobals(std::shared_ptr<FSMGlobals> globals);
 
         /**
+         * @brief Determines, if the globals struct was modified and requires
+         * to be persisted to NVS by the FSM controller
+         */
+        bool isGlobalsDirty();
+
+        /**
          * @brief Provides access to the name of this state
          * 
          * @return Name of this state
          */
         virtual const char* getName();
+
+        /**
+         * @brief If true, the FSM will persist this state and resume to it after
+         * reboot, if no other transition to another rememberable state happened since
+         * 
+         * @return True, if the FSM should remember this state and resume to it upon reboot
+         */
+        virtual bool shouldBeRemembered();
 
         /**
          * @brief Provides access to the tick rate of this state
@@ -128,6 +143,7 @@ struct DisplayPrideFlag : public FSMState {
     unsigned int switchdelay_ms = 5000;
 
     virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
     virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;
@@ -143,6 +159,7 @@ struct DisplayAnimation : public FSMState {
     uint32_t tick = 0;
 
     virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
     virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;

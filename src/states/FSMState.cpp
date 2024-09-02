@@ -30,6 +30,14 @@ void FSMState::attachGlobals(std::shared_ptr<FSMGlobals> globals) {
     this->globals = std::move(globals);
 }
 
+bool FSMState::isGlobalsDirty() {
+    return this->is_globals_dirty;
+}
+
+bool FSMState::shouldBeRemembered() {
+    return false;
+}
+
 const char* FSMState::getName() {
     return "FSMState";
 }

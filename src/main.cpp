@@ -162,6 +162,9 @@ void setup() {
     EFTouch.attachInterruptOnRelease(EFTouchZone::Nose, isr_noseRelease);
     EFTouch.attachInterruptOnShortpress(EFTouchZone::Nose, isr_noseShortpress);
     EFTouch.attachInterruptOnLongpress(EFTouchZone::Nose, isr_noseLongpress);
+    
+    // Get FSM going
+    fsm.resume();
 }
 
 /**
@@ -214,14 +217,6 @@ void loop() {
         fsm.handle();
         task_fsm_handle = millis() + fsm.getTickRateMs();
     }
-
-    // Task: Blink LED
-    // if (task_blinkled < millis()) {
-    //     EFLed.setDragonEarTop(blinkled_state ? CRGB::Green : CRGB::Black);
-    //     blinkled_state = !blinkled_state;
-
-    //     task_blinkled = millis() + 1000;
-    // }
 
     // Task: Battery checks
     if (task_battery < millis()) {
