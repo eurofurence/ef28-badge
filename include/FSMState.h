@@ -135,7 +135,7 @@ class FSMState {
 };
 
 /**
- * @brief Main state: Displays a pride flag
+ * @brief Displays pride flags
  */
 struct DisplayPrideFlag : public FSMState {
     uint32_t tick = 0;
@@ -150,10 +150,11 @@ struct DisplayPrideFlag : public FSMState {
     virtual void run() override;
 
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
 };
 
 /**
- * @brief Main state: Displays an animation
+ * @brief Displays animations
  */
 struct DisplayAnimation : public FSMState {
     uint32_t tick = 0;
@@ -182,27 +183,21 @@ struct OTAUpdate : public FSMState {
     virtual const char* getName() override;
 
     virtual void entry() override;
+    virtual void run() override;
     virtual void exit() override;
 
-    virtual std::unique_ptr<FSMState> touchEventFingerprintTouch() override;
-    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
-    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
-
-    virtual std::unique_ptr<FSMState> touchEventNoseLongpress() override;
 };
 
 /**
- * @brief Sub-Menu: Pride flag selector
+ * @brief Menu entry point
  */
-struct MenuPrideFlagSelector : public FSMState {
-    std::unique_ptr<DisplayPrideFlag> prideFlagDisplayRunner;
+struct MenuMain : public FSMState {
+    uint8_t menucursor_idx = 0;
 
     virtual const char* getName() override;
-    virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;
-    virtual void run() override;
     virtual void exit() override;
 
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
