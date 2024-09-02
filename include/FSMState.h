@@ -55,6 +55,12 @@ class FSMState {
         bool isGlobalsDirty();
 
         /**
+         * @brief Resets the dirty flag for FSM globals object. Should be called
+         * after globals were successfully persisted.
+         */
+        void resetGlobalsDirty();
+
+        /**
          * @brief Provides access to the name of this state
          * 
          * @return Name of this state
@@ -154,9 +160,9 @@ struct DisplayPrideFlag : public FSMState {
 };
 
 /**
- * @brief Displays animations
+ * @brief Displays rainbow animations
  */
-struct DisplayAnimation : public FSMState {
+struct AnimateRainbow : public FSMState {
     uint32_t tick = 0;
 
     virtual const char* getName() override;
@@ -169,11 +175,44 @@ struct DisplayAnimation : public FSMState {
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
 
-    void _animateKnightRider();
-    void _animateMatrix();
     void _animateRainbow();
     void _animateRainbowCircle();
+};
+
+/**
+ * @brief Displays matrix animation
+ */
+struct AnimateMatrix : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+    virtual const unsigned int getTickRateMs() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+};
+
+/**
+ * @brief Displays snake animations
+ */
+struct AnimateSnake : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+    virtual const unsigned int getTickRateMs() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+
     void _animateSnake();
+    void _animateKnightRider();
 };
 
 /**

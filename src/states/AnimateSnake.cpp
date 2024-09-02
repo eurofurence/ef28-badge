@@ -30,69 +30,60 @@
 
 #include "FSMState.h"
 
-#define DISPLAY_ANIMATION_NUM_TOTAL 6  //!< Number of available animations
+#define ANIMATE_SNAKE_NUM_TOTAL 2  //!< Number of available animations
 
 /**
  * @brief Index of all animations, each consisting of a periodically called
  * animation function and an associated tick rate in milliseconds.
  */
 const struct {
-    void (DisplayAnimation::* animate)();
+    void (AnimateSnake::* animate)();
     const unsigned int tickrate;
-} animations[DISPLAY_ANIMATION_NUM_TOTAL] = {
-    {.animate = &DisplayAnimation::_animateRainbowCircle, .tickrate = 20},
-    {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 100},
-    {.animate = &DisplayAnimation::_animateRainbow, .tickrate = 20},
-    {.animate = &DisplayAnimation::_animateMatrix, .tickrate = 100},
-    {.animate = &DisplayAnimation::_animateKnightRider, .tickrate = 80},
-    {.animate = &DisplayAnimation::_animateSnake, .tickrate = 80}
-
+} animations[ANIMATE_SNAKE_NUM_TOTAL] = {
+    {.animate = &AnimateSnake::_animateSnake, .tickrate = 80},
+    {.animate = &AnimateSnake::_animateKnightRider, .tickrate = 80}
 };
 
-const char* DisplayAnimation::getName() {
-    return "DisplayAnimation";
+const char* AnimateSnake::getName() {
+    return "AnimateSnake";
 }
 
-bool DisplayAnimation::shouldBeRemembered() {
+bool AnimateSnake::shouldBeRemembered() {
     return true;
 }
 
-const unsigned int DisplayAnimation::getTickRateMs() {
-    return animations[this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL].tickrate;
+const unsigned int AnimateSnake::getTickRateMs() {
+    return animations[this->globals->animSnakeIdx % ANIMATE_SNAKE_NUM_TOTAL].tickrate;
 }
 
-void DisplayAnimation::entry() {
+void AnimateSnake::entry() {
     this->tick = 0;
 }
 
-void DisplayAnimation::run() {
-    (*this.*(animations[this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL].animate))();
+void AnimateSnake::run() {
+    (*this.*(animations[this->globals->animSnakeIdx % ANIMATE_SNAKE_NUM_TOTAL].animate))();
     this->tick++;
 }
 
-std::unique_ptr<FSMState> DisplayAnimation::touchEventFingerprintRelease() {
-    this->globals->animationModeIdx++;
+std::unique_ptr<FSMState> AnimateSnake::touchEventFingerprintRelease() {
+    this->globals->animSnakeIdx++;
     this->is_globals_dirty = true;
     this->tick = 0;
     EFLed.clear();
 
     LOGF_INFO(
-        "(DisplayAnimation) Changed animation mode to: %d\r\n",
-        this->globals->animationModeIdx % DISPLAY_ANIMATION_NUM_TOTAL
+        "(AnimateSnake) Changed animation mode to: %d\r\n",
+        this->globals->animSnakeIdx % ANIMATE_SNAKE_NUM_TOTAL
     );
 
     return nullptr;
 }
 
-std::unique_ptr<FSMState> DisplayAnimation::touchEventFingerprintShortpress() {
+std::unique_ptr<FSMState> AnimateSnake::touchEventFingerprintShortpress() {
     return std::make_unique<MenuMain>();
 }
 
-void DisplayAnimation::_animateRainbow() {
-    EFLed.setAllSolid(CHSV((tick % 256), 255, 255));
-}
-
-void DisplayAnimation::_animateKnightRider() {
+void AnimateSnake::_animateKnightRider() {
     // Calculate pattern
     uint16_t pattern = 0b111 << (EFLED_EFBAR_NUM - 3);
     if (tick % 16 < 8) {
@@ -116,7 +107,7 @@ void DisplayAnimation::_animateKnightRider() {
     EFLed.setEFBar(colors);
 }
 
-void DisplayAnimation::_animateSnake() {
+void AnimateSnake::_animateSnake() {
     std::vector<CRGB> pattern = {
         CRGB::Red,
         CRGB::Red,
@@ -141,39 +132,3 @@ void DisplayAnimation::_animateSnake() {
     EFLed.setAll(pattern.data());
 }
 
-void DisplayAnimation::_animateMatrix() {
-    std::vector<CRGB> dragon = {
-        CRGB::Black,
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
-        CRGB::Black,
-        CRGB::Black
-    };
-
-    std::vector<CRGB> bar = {
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
-        CRGB::Black,
-        CRGB::Black,
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
-        CRGB::Black,
-        CRGB::Black,
-        CRGB::Black,
-    };
-
-    std::rotate(dragon.begin(), dragon.begin() + this->tick % EFLED_DRAGON_NUM, dragon.end());
-    std::rotate(bar.rbegin(), bar.rbegin() + this->tick % EFLED_EFBAR_NUM, bar.rend());
-
-    dragon.insert(dragon.end(), bar.begin(), bar.end());
-    EFLed.setAll(dragon.data());
-}
-
-void DisplayAnimation::_animateRainbowCircle() {
-    CRGB data[EFLED_TOTAL_NUM];
-    fill_rainbow_circular(data, EFLED_TOTAL_NUM, (tick % 128)*2, true);
-    EFLed.setAll(data);
-}

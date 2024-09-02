@@ -34,6 +34,10 @@ bool FSMState::isGlobalsDirty() {
     return this->is_globals_dirty;
 }
 
+void FSMState::resetGlobalsDirty() {
+    this->is_globals_dirty = false;
+}
+
 bool FSMState::shouldBeRemembered() {
     return false;
 }
