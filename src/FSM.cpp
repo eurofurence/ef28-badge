@@ -215,7 +215,7 @@ void FSM::restoreGlobals() {
     LOGF_INFO("(FSM) Restored FSM state data from NVS area: %s\r\n", this->NVS_NAMESPACE);
     this->globals->lastRememberedState = pref.getString("resumeState", "DisplayPrideFlag").c_str();
     LOGF_DEBUG("(FSM)  -> resumeState = %s\r\n", this->globals->lastRememberedState);
-    this->globals->prideFlagModeIdx = pref.getUInt("prideFlagMode", 0);
+    this->globals->prideFlagModeIdx = pref.getUInt("prideFlagMode", 1);
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
     this->globals->animationModeIdx = pref.getUInt("animationMode", 0);
     LOGF_DEBUG("(FSM)  -> animationMode = %d\r\n", this->globals->animationModeIdx);
