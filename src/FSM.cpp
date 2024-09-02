@@ -53,8 +53,18 @@ void FSM::resume() {
         return;
     }
 
-    if (strcmp(this->globals->lastRememberedState, "DisplayAnimation") == 0) {
-        this->transition(std::make_unique<DisplayAnimation>());
+    if (strcmp(this->globals->lastRememberedState, "AnimateRainbow") == 0) {
+        this->transition(std::make_unique<AnimateRainbow>());
+        return;
+    }
+
+    if (strcmp(this->globals->lastRememberedState, "AnimareMatrix") == 0) {
+        this->transition(std::make_unique<AnimateMatrix>());
+        return;
+    }
+
+    if (strcmp(this->globals->lastRememberedState, "AnimateSnake") == 0) {
+        this->transition(std::make_unique<AnimateSnake>());
         return;
     }
 
@@ -204,8 +214,10 @@ void FSM::persistGlobals() {
     LOGF_DEBUG("(FSM)  -> resumeState = %s\r\n", this->globals->lastRememberedState);
     pref.putUInt("prideFlagMode", this->globals->prideFlagModeIdx);
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
-    pref.putUInt("animationMode", this->globals->animationModeIdx);
-    LOGF_DEBUG("(FSM)  -> animationMode = %d\r\n", this->globals->animationModeIdx);
+    pref.putUInt("animRainbow", this->globals->animRainbowIdx);
+    LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
+    pref.putUInt("animSnake", this->globals->animSnakeIdx);
+    LOGF_DEBUG("(FSM)  -> animSnake = %d\r\n", this->globals->animSnakeIdx);
     pref.end();
 }
 
@@ -217,7 +229,9 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> resumeState = %s\r\n", this->globals->lastRememberedState);
     this->globals->prideFlagModeIdx = pref.getUInt("prideFlagMode", 1);
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
-    this->globals->animationModeIdx = pref.getUInt("animationMode", 0);
-    LOGF_DEBUG("(FSM)  -> animationMode = %d\r\n", this->globals->animationModeIdx);
+    this->globals->animRainbowIdx = pref.getUInt("animRainbow", 0);
+    LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
+    this->globals->animSnakeIdx = pref.getUInt("animSnake", 0);
+    LOGF_DEBUG("(FSM)  -> animSnake = %d\r\n", this->globals->animSnakeIdx);
     pref.end();
 }
