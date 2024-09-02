@@ -31,6 +31,8 @@
 
 #include "FSM.h"
 
+Preferences pref;
+
 FSM::FSM(unsigned int tickrate_ms)
 : state(nullptr)
 , tickrate_ms(tickrate_ms)
@@ -48,28 +50,17 @@ FSM::~FSM() {
 void FSM::resume() {
     this->restoreGlobals();
     
-    if (strcmp(this->globals->lastRememberedState, "DisplayPrideFlag") == 0) {
-        this->transition(std::make_unique<DisplayPrideFlag>());
-        return;
-    }
+    switch (this->globals->resumeStateIdx) {
+        case 0: this->transition(std::make_unique<DisplayPrideFlag>()); break;
+        case 1: this->transition(std::make_unique<AnimateRainbow>()); break;
+        case 2: this->transition(std::make_unique<AnimateMatrix>()); break;
+        case 3: this->transition(std::make_unique<AnimateSnake>()); break;
+        default:
+            LOGF_WARNING("(FSM) Failed to resume to unknown state: %d\r\n", this->globals->resumeStateIdx);
+            this->transition(std::make_unique<DisplayPrideFlag>());
+            break;
 
-    if (strcmp(this->globals->lastRememberedState, "AnimateRainbow") == 0) {
-        this->transition(std::make_unique<AnimateRainbow>());
-        return;
     }
-
-    if (strcmp(this->globals->lastRememberedState, "AnimareMatrix") == 0) {
-        this->transition(std::make_unique<AnimateMatrix>());
-        return;
-    }
-
-    if (strcmp(this->globals->lastRememberedState, "AnimateSnake") == 0) {
-        this->transition(std::make_unique<AnimateSnake>());
-        return;
-    }
-
-    LOGF_WARNING("(FSM) Failed to resume to unknown state: %s\r\n", this->globals->lastRememberedState);
-    this->transition(std::make_unique<DisplayPrideFlag>());
 }
 
 void FSM::transition(std::unique_ptr<FSMState> next) {
@@ -84,10 +75,11 @@ void FSM::transition(std::unique_ptr<FSMState> next) {
 
     // Persist globals if state dirtied it or next state wants to be persisted
     if (next->shouldBeRemembered()) {
-        this->globals->lastRememberedState = next->getName();
+        this->globals->resumeStateIdx = this->globals->menuMainPointerIdx;
     }
     if (this->state->isGlobalsDirty() || next->shouldBeRemembered()) {
         this->persistGlobals();
+        this->state->resetGlobalsDirty();
     }
 
     // Transition to next state
@@ -142,6 +134,12 @@ void FSM::handle() {
 }
 
 void FSM::handle(unsigned int num_events) {
+    // Handle dirtied FSM globals
+    if (this->state->isGlobalsDirty()) {
+        this->persistGlobals();
+        this->state->resetGlobalsDirty();
+    }
+
     // Handle state run()
     if (
         this->state->getTickRateMs() == 0 ||
@@ -205,13 +203,14 @@ void FSM::handle(unsigned int num_events) {
 }
 
 void FSM::persistGlobals() {
-    Preferences pref;
     pref.begin(this->NVS_NAMESPACE, false);
     LOGF_INFO("(FSM) Persisting FSM state data to NVS area: %s\r\n", this->NVS_NAMESPACE);
     pref.clear();
     LOG_DEBUG("(FSM)  -> Clear storage area");
-    pref.putString("resumeState", this->globals->lastRememberedState);
-    LOGF_DEBUG("(FSM)  -> resumeState = %s\r\n", this->globals->lastRememberedState);
+    pref.putUInt("resumeStateIdx", this->globals->resumeStateIdx);
+    LOGF_DEBUG("(FSM)  -> resumeStateIdx = %d\r\n", this->globals->resumeStateIdx);
+    pref.putUInt("menuIdx", this->globals->menuMainPointerIdx);
+    LOGF_DEBUG("(FSM)  -> menuIdx = %d\r\n", this->globals->menuMainPointerIdx);
     pref.putUInt("prideFlagMode", this->globals->prideFlagModeIdx);
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
     pref.putUInt("animRainbow", this->globals->animRainbowIdx);
@@ -222,11 +221,12 @@ void FSM::persistGlobals() {
 }
 
 void FSM::restoreGlobals() {
-    Preferences pref;
     pref.begin(this->NVS_NAMESPACE, true);
-    LOGF_INFO("(FSM) Restored FSM state data from NVS area: %s\r\n", this->NVS_NAMESPACE);
-    this->globals->lastRememberedState = pref.getString("resumeState", "DisplayPrideFlag").c_str();
-    LOGF_DEBUG("(FSM)  -> resumeState = %s\r\n", this->globals->lastRememberedState);
+    LOGF_INFO("(FSM) Restoring FSM state data from NVS area: %s\r\n", this->NVS_NAMESPACE);
+    this->globals->resumeStateIdx = pref.getUInt("resumeStateIdx", 0);
+    LOGF_DEBUG("(FSM)  -> resumeStateIdx = %d\r\n", this->globals->resumeStateIdx);
+    this->globals->menuMainPointerIdx = pref.getUInt("menuIdx", 0);
+    LOGF_DEBUG("(FSM)  -> menuIdx = %d\r\n", this->globals->menuMainPointerIdx);
     this->globals->prideFlagModeIdx = pref.getUInt("prideFlagMode", 1);
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
     this->globals->animRainbowIdx = pref.getUInt("animRainbow", 0);

@@ -55,6 +55,12 @@ class FSMState {
         bool isGlobalsDirty();
 
         /**
+         * @brief Resets the dirty flag for FSM globals object. Should be called
+         * after globals were successfully persisted.
+         */
+        void resetGlobalsDirty();
+
+        /**
          * @brief Provides access to the name of this state
          * 
          * @return Name of this state
@@ -169,11 +175,8 @@ struct AnimateRainbow : public FSMState {
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
 
-    void _animateKnightRider();
-    void _animateMatrix();
     void _animateRainbow();
     void _animateRainbowCircle();
-    void _animateSnake();
 };
 
 /**
