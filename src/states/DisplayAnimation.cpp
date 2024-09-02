@@ -68,6 +68,7 @@ void DisplayAnimation::run() {
 
 std::unique_ptr<FSMState> DisplayAnimation::touchEventFingerprintRelease() {
     this->globals->animationModeIdx++;
+    this->is_globals_dirty = true;
     this->tick = 0;
     EFLed.clear();
 

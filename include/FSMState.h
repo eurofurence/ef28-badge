@@ -40,12 +40,19 @@ class FSMState {
     protected:
     
         std::shared_ptr<FSMGlobals> globals;  //!< Pointer to global FSM state variables
+        bool is_globals_dirty;                //!< Marks globals as dirty, causing it to be persisted to NVS
 
     public:
         /**
          * @brief Sets the reference on the global FSM data struct
          */
         void attachGlobals(std::shared_ptr<FSMGlobals> globals);
+
+        /**
+         * @brief Determines, if the globals struct was modified and requires
+         * to be persisted to NVS by the FSM controller
+         */
+        bool isGlobalsDirty();
 
         /**
          * @brief Provides access to the name of this state

@@ -151,6 +151,7 @@ void setup() {
     // Init board
     EFBoard.setup();
     EFLed.init(30);
+    fsm.restoreGlobals();
     
     // Touchy stuff
     EFTouch.init();

@@ -49,6 +49,8 @@ class FSM {
         std::queue<FSMEvent> eventqueue;     //!< Queue to store FSMEvents. ATTENTION: THIS IS NOT THREAD SAFE ON ITS OWN!
         std::shared_ptr<FSMGlobals> globals; //!< Global FSM state data
 
+        const char* NVS_NAMESPACE = "effsm";  //!< Namespace under which the FSM stores persisted data in non-volatile storage (NVS)
+
         /**
          * @brief Retrieves the next FSMEvent from the queue in a non-blocking fashion.
          * 
@@ -101,6 +103,17 @@ class FSM {
          * @param num_events Maximum number of events from the queue to process during this cycle
          */
         void handle(unsigned int num_events);
+
+        /**
+         * @brief Presists the current globals state of this FSM to the NVS partition
+         */
+        void persistGlobals();
+
+        /**
+         * @brief Loads the globals state from the NVS partition and recovers it into current
+         * globals FSM state
+         */
+        void restoreGlobals();
 
 };
 

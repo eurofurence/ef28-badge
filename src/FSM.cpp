@@ -25,6 +25,7 @@
  */
 
 #include <Arduino.h>
+#include <Preferences.h>
 
 #include <EFLogging.h>
 
@@ -147,12 +148,44 @@ void FSM::handle(unsigned int num_events) {
 
         // Handle state transition
         if (next != nullptr) {
+            // State exit
             LOGF_INFO("(FSM) Transition %s -> %s\r\n", this->state->getName(), next->getName());
             this->state->exit();
+
+            // Persist globals if state dirtied it
+            if (this->state->isGlobalsDirty()) {
+                this->persistGlobals();
+            }
+
+            // Transition to next state
             this->state = std::move(next);
             this->state->attachGlobals(this->globals);
             this->state_last_run = 0;
             this->state->entry();
         }
     }
+}
+
+void FSM::persistGlobals() {
+    Preferences pref;
+    pref.begin(this->NVS_NAMESPACE, false);
+    LOGF_INFO("(FSM) Persisting FSM state data to NVS area: %s\r\n", this->NVS_NAMESPACE);
+    pref.clear();
+    LOG_DEBUG("(FSM)  -> Clear storage area");
+    pref.putUInt("prideFlagMode", this->globals->prideFlagModeIdx);
+    LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
+    pref.putUInt("animationMode", this->globals->animationModeIdx);
+    LOGF_DEBUG("(FSM)  -> animationMode = %d\r\n", this->globals->animationModeIdx);
+    pref.end();
+}
+
+void FSM::restoreGlobals() {
+    Preferences pref;
+    pref.begin(this->NVS_NAMESPACE, true);
+    LOGF_INFO("(FSM) Restored FSM state data from NVS area: %s\r\n", this->NVS_NAMESPACE);
+    this->globals->prideFlagModeIdx = pref.getUInt("prideFlagMode", 0);
+    LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
+    this->globals->animationModeIdx = pref.getUInt("animationMode", 0);
+    LOGF_DEBUG("(FSM)  -> animationMode = %d\r\n", this->globals->animationModeIdx);
+    pref.end();
 }
