@@ -33,11 +33,11 @@
 
 #include "FSMState.h"
 
-const char* MenuOTAUpdate::getName() {
-    return "MenuOTAUpdate";
+const char* OTAUpdate::getName() {
+    return "OTAUpdate";
 }
 
-void MenuOTAUpdate::entry() {
+void OTAUpdate::entry() {
     // Connecto to wifi
     EFLed.setDragonNose(CRGB::Red);
     if (EFBoard.connectToWifi(WIFI_SSID, WIFI_PASSWORD)) {
@@ -49,15 +49,15 @@ void MenuOTAUpdate::entry() {
     EFLed.setDragonMuzzle(CRGB::Green);
 }
 
-void MenuOTAUpdate::run() {
+void OTAUpdate::run() {
     ArduinoOTA.handle();
 }
 
-void MenuOTAUpdate::exit() {
+void OTAUpdate::exit() {
     EFBoard.disableOTA();
     EFBoard.disableWifi();
 }
 
-std::unique_ptr<FSMState> MenuOTAUpdate::touchEventFingerprintShortpress() {
+std::unique_ptr<FSMState> OTAUpdate::touchEventFingerprintShortpress() {
     return std::make_unique<MenuMain>();
 }

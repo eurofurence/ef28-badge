@@ -176,11 +176,9 @@ struct DisplayAnimation : public FSMState {
 };
 
 /**
- * @brief Menu entry point
+ * @brief Accept and handle OTA updates
  */
-struct MenuMain : public FSMState {
-    uint8_t menucursor_idx = 0;
-
+struct OTAUpdate : public FSMState {
     virtual const char* getName() override;
 
     virtual void entry() override;
@@ -210,19 +208,6 @@ struct MenuPrideFlagSelector : public FSMState {
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
-};
-
-/**
- * @brief Sub-Menu: Accept OTA updates
- */
-struct MenuOTAUpdate : public FSMState {
-    virtual const char* getName() override;
-
-    virtual void entry() override;
-    virtual void run() override;
-    virtual void exit() override;
-
-    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
 };
 
 #endif /* FSM_STATE_H_ */
