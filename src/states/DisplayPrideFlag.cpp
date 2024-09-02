@@ -125,3 +125,11 @@ void DisplayPrideFlag::run() {
 std::unique_ptr<FSMState> DisplayPrideFlag::touchEventFingerprintShortpress() {
     return std::make_unique<MenuMain>();
 }
+
+std::unique_ptr<FSMState> DisplayPrideFlag::touchEventFingerprintRelease() {
+    this->globals->prideFlagModeIdx = (this->globals->prideFlagModeIdx + 1) % 13;
+    this->is_globals_dirty = true;
+    this->tick = 0;
+
+    return nullptr;
+}

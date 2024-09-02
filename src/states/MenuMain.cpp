@@ -29,6 +29,12 @@
 
 #include "FSMState.h"
 
+/**
+ * @brief Number of registered menu items
+ */
+#define MENUMAIN_NUM_MENU_ITEMS 3
+
+
 const char* MenuMain::getName() {
     return "MenuMain";
 }
@@ -43,12 +49,8 @@ void MenuMain::exit() {
     EFLed.clear();
 }
 
-std::unique_ptr<FSMState> MenuMain::touchEventFingerprintTouch() {
-    return nullptr;
-}
-
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintRelease() {
-    this->globals->menuMainPointerIdx = (this->globals->menuMainPointerIdx + 1) % 2;
+    this->globals->menuMainPointerIdx = (this->globals->menuMainPointerIdx + 1) % MENUMAIN_NUM_MENU_ITEMS;
     EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, CRGB::Purple, CRGB::Black);
     return nullptr;
 }
@@ -56,16 +58,13 @@ std::unique_ptr<FSMState> MenuMain::touchEventFingerprintRelease() {
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
     LOGF_DEBUG("(MenuMain) menuMainPointerIdx = %d\r\n", this->globals->menuMainPointerIdx);
     switch (this->globals->menuMainPointerIdx) {
-        case 0: return std::make_unique<MenuPrideFlagSelector>();
+        case 0: return std::make_unique<DisplayPrideFlag>();
         case 1: return std::make_unique<DisplayAnimation>();
+        case 2: return std::make_unique<OTAUpdate>();
         default: return nullptr;
     }
 }
 
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintLongpress() {
-    return std::make_unique<DisplayPrideFlag>();
-}
-
-std::unique_ptr<FSMState> MenuMain::touchEventNoseLongpress() {
-    return std::make_unique<MenuOTAUpdate>();
+    return this->touchEventFingerprintShortpress();
 }

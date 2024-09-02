@@ -135,7 +135,7 @@ class FSMState {
 };
 
 /**
- * @brief Main state: Displays a pride flag
+ * @brief Displays pride flags
  */
 struct DisplayPrideFlag : public FSMState {
     uint32_t tick = 0;
@@ -150,10 +150,11 @@ struct DisplayPrideFlag : public FSMState {
     virtual void run() override;
 
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
 };
 
 /**
- * @brief Main state: Displays an animation
+ * @brief Displays animations
  */
 struct DisplayAnimation : public FSMState {
     uint32_t tick = 0;
@@ -176,6 +177,19 @@ struct DisplayAnimation : public FSMState {
 };
 
 /**
+ * @brief Accept and handle OTA updates
+ */
+struct OTAUpdate : public FSMState {
+    virtual const char* getName() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+    virtual void exit() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+};
+
+/**
  * @brief Menu entry point
  */
 struct MenuMain : public FSMState {
@@ -186,43 +200,9 @@ struct MenuMain : public FSMState {
     virtual void entry() override;
     virtual void exit() override;
 
-    virtual std::unique_ptr<FSMState> touchEventFingerprintTouch() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
-
-    virtual std::unique_ptr<FSMState> touchEventNoseLongpress() override;
-};
-
-/**
- * @brief Sub-Menu: Pride flag selector
- */
-struct MenuPrideFlagSelector : public FSMState {
-    std::unique_ptr<DisplayPrideFlag> prideFlagDisplayRunner;
-
-    virtual const char* getName() override;
-    virtual const unsigned int getTickRateMs() override;
-
-    virtual void entry() override;
-    virtual void run() override;
-    virtual void exit() override;
-
-    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
-    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
-    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
-};
-
-/**
- * @brief Sub-Menu: Accept OTA updates
- */
-struct MenuOTAUpdate : public FSMState {
-    virtual const char* getName() override;
-
-    virtual void entry() override;
-    virtual void run() override;
-    virtual void exit() override;
-
-    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
 };
 
 #endif /* FSM_STATE_H_ */
