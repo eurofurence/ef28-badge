@@ -215,14 +215,6 @@ void loop() {
         task_fsm_handle = millis() + fsm.getTickRateMs();
     }
 
-    // Task: Blink LED
-    // if (task_blinkled < millis()) {
-    //     EFLed.setDragonEarTop(blinkled_state ? CRGB::Green : CRGB::Black);
-    //     blinkled_state = !blinkled_state;
-
-    //     task_blinkled = millis() + 1000;
-    // }
-
     // Task: Battery checks
     if (task_battery < millis()) {
         pwrstate = EFBoard.updatePowerState();
