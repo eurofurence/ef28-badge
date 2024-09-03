@@ -40,6 +40,7 @@
 #include "util.h"
 
 // Global objects and states
+constexpr unsigned int INTERVAL_BATTERY_CHECK = 60000;
 FSM fsm(10);
 EFBoardPowerState pwrstate;
 
@@ -239,6 +240,6 @@ void loop() {
             _softBrownOutHandler();
         }
 
-        task_battery = millis() + 60000;
+        task_battery = millis() + INTERVAL_BATTERY_CHECK;
     }
 }
