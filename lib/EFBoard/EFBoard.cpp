@@ -256,7 +256,7 @@ void EFBoardClass::enableOTA(const char *password) {
 
                 // Setup LEDs
                 EFLed.clear();
-                EFLed.setBrightness(50);
+                EFLed.setBrightnessPercent(50);
                 EFLed.setDragonEye(CRGB::Blue);
             })
             .onEnd([]() {

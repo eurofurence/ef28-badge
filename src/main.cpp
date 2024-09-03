@@ -84,7 +84,7 @@ void _hardBrownOutHandler() {
     );
     EFBoard.disableWifi();
     // Try getting the LEDs into some known state
-    EFLed.setBrightness(20);
+    EFLed.setBrightnessPercent(20);
     EFLed.clear();
     EFLed.setDragonNose(CRGB::Red);
 
@@ -114,7 +114,7 @@ void _softBrownOutHandler() {
     EFBoard.disableWifi();
     EFLed.clear();
     EFLed.enablePower();
-    EFLed.setBrightness(50);
+    EFLed.setBrightnessPercent(50);
 
     // Soft brown out can only be cleared by board reset but can escalate to hard brown out
     while (1) {
