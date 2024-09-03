@@ -40,6 +40,7 @@
 #include "util.h"
 
 // Global objects and states
+constexpr unsigned int INTERVAL_BATTERY_CHECK = 60000;
 FSM fsm(10);
 EFBoardPowerState pwrstate;
 
@@ -84,7 +85,7 @@ void _hardBrownOutHandler() {
     );
     EFBoard.disableWifi();
     // Try getting the LEDs into some known state
-    EFLed.setBrightness(20);
+    EFLed.setBrightnessPercent(20);
     EFLed.clear();
     EFLed.setDragonNose(CRGB::Red);
 
@@ -114,7 +115,7 @@ void _softBrownOutHandler() {
     EFBoard.disableWifi();
     EFLed.clear();
     EFLed.enablePower();
-    EFLed.setBrightness(50);
+    EFLed.setBrightnessPercent(50);
 
     // Soft brown out can only be cleared by board reset but can escalate to hard brown out
     while (1) {
@@ -239,6 +240,6 @@ void loop() {
             _softBrownOutHandler();
         }
 
-        task_battery = millis() + 60000;
+        task_battery = millis() + INTERVAL_BATTERY_CHECK;
     }
 }

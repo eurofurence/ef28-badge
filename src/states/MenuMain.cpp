@@ -35,7 +35,7 @@
 #define MENUMAIN_NUM_MENU_ITEMS 5
 
 
-const char* MenuMain::getName() {
+const char *MenuMain::getName() {
     return "MenuMain";
 }
 

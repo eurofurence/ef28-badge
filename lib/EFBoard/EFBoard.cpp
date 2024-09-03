@@ -190,7 +190,7 @@ const EFBoardPowerState EFBoardClass::resetPowerState() {
 bool EFBoardClass::connectToWifi(const char *ssid, const char *password) {
     LOGF_INFO("(EFBoard) Connecting to WiFi network: %s ", ssid);
 
-    // Try to connect to wifi
+    // Try to connect to WiFi
     WiFi.begin(ssid, password);
     WiFi.setSleep(true);
     for (int32_t timeout_ms = 10000; timeout_ms >= 0; timeout_ms -= 200) {
@@ -256,7 +256,7 @@ void EFBoardClass::enableOTA(const char *password) {
 
                 // Setup LEDs
                 EFLed.clear();
-                EFLed.setBrightness(50);
+                EFLed.setBrightnessPercent(50);
                 EFLed.setDragonEye(CRGB::Blue);
             })
             .onEnd([]() {
