@@ -29,8 +29,7 @@ jobs:
         run: "pip install --upgrade platformio"
 
       - name: "CppCheck"
-        continue-on-error: true
-        run: "pio check"
+        run: 'pio check --fail-on-defect high --src-filters="-<.pio>"'
 
       - name: "Build PlatformIO Project"
         run: "pio run"
