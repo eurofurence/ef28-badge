@@ -28,5 +28,9 @@ jobs:
       - name: "Install PlatformIO Core"
         run: "pip install --upgrade platformio"
 
+      - name: "CppCheck"
+        continue-on-error: true
+        run: "pio check"
+
       - name: "Build PlatformIO Project"
         run: "pio run"
