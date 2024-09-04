@@ -216,6 +216,26 @@ struct AnimateSnake : public FSMState {
 };
 
 /**
+ * @brief Displays pusling color
+ */
+struct AnimateHeartbeat : public FSMState {
+ uint32_t tick = 0;
+ uint8_t currentHue = 0;
+ uint8_t currentTickIncrease = 1;
+
+ virtual const char* getName() override;
+ virtual bool shouldBeRemembered() override;
+ virtual const unsigned int getTickRateMs() override;
+
+ virtual void entry() override;
+ virtual void run() override;
+
+ virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+ virtual std::unique_ptr<FSMState> touchEventNoseRelease() override;
+ virtual std::unique_ptr<FSMState> touchEventNoseShortpress() override;
+};
+
+/**
  * @brief Accept and handle OTA updates
  */
 struct OTAUpdate : public FSMState {
