@@ -31,6 +31,26 @@
 
 #include "EFLed.h"
 
+static const EFLedClass::LEDPosition led_positions[] = {
+    {17, 126},  // 0
+    {21, 106},
+    {23, 91},
+    {41, 86},
+    {35, 48},
+    {37, 43},  // 5
+    {61, 15},
+    {61, 27},
+    {61, 41},
+    {61, 54},
+    {61, 67},  // 10
+    {61, 79},
+    {61, 93},
+    {61, 105},
+    {61, 118},
+    {61, 131},  // 15
+    {61, 144}
+};
+
 EFLedClass::EFLedClass()
 : max_brightness(0)
 , led_data({0})
@@ -163,6 +183,13 @@ void EFLedClass::setEFBarCursor(
         this->led_data[EFLED_EFBAR_OFFSET + i] = (i == idx) ? color_on : color_off;
     }
     FastLED.show();
+}
+
+EFLedClass::LEDPosition EFLedClass::getLEDPosition(const uint8_t idx) {
+    if (idx < std::size(led_positions)) {
+        return led_positions[idx];
+    }
+    return {0, 0};  // Returning default position (0, 0) for out-of-bounds
 }
 
 void EFLedClass::fillEFBarProportionally(
