@@ -26,7 +26,6 @@
 
 #include <EFLed.h>
 #include <EFLogging.h>
-#include <EFPrideFlags.h>
 
 #include "FSMState.h"
 
