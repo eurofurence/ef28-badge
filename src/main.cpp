@@ -145,6 +145,64 @@ void _softBrownOutHandler() {
     }
 }
 
+float wave_function(float x, float start, float end, float amplitude) {
+    if (x < start || x > end) {
+        return 0;
+    }
+    double normalized_x = (x - start) / (end - start) * M_PI;
+    return amplitude * std::sin(normalized_x);
+}
+
+void bootupAnimation() {
+    CRGB data[EFLED_TOTAL_NUM];
+    fill_solid(data, EFLED_TOTAL_NUM, CRGB::Black);
+    EFLed.setAll(data);
+    delay(100);
+
+    // Origin point. Power-Button is 11, 25. Make it originate from where the hand is
+    constexpr int16_t pwrX = -20;
+    constexpr int16_t pwrY = 26;
+    uint8_t hue = 120;  // Green
+
+    for (uint16_t n = 0; n < 30; n++) {
+        uint16_t n_scaled = n * 8;
+        for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
+            int16_t dx = EFLedClass::getLEDPosition(i).x - pwrX;
+            int16_t dy = EFLedClass::getLEDPosition(i).y - pwrY;
+            float distance = sqrt(dx * dx + dy * dy);
+
+            float intensity = wave_function(distance, n_scaled / 2 - 60, n_scaled * 2 + 20, 1.0);
+            intensity = intensity * intensity; // sharpen wave
+
+            // energy front
+            uint8_t value = static_cast<uint8_t>(intensity * 255);
+            data[i] = CHSV((hue + static_cast<uint16_t>(distance * 2.0f)) % 255, 240, value);
+        }
+        EFLed.setAll(data);
+        delay(15);
+    }
+    EFLed.clear();
+    delay(200);
+
+    // dragon awakens ;-)
+    EFLed.setDragonEye(CRGB(10,0, 0));
+    delay(50);
+    EFLed.setDragonEye(CRGB(50,0, 0));
+    delay(80);
+    EFLed.setDragonEye(CRGB(100,0, 0));
+    delay(150);
+    EFLed.setDragonEye(CRGB(200,0, 0));
+    delay(600);
+    EFLed.setDragonEye(CRGB(100,0, 0));
+    delay(100);
+    EFLed.setDragonEye(CRGB(50,0, 0));
+    delay(100);
+    EFLed.setDragonEye(CRGB(10,0, 0));
+    delay(80);
+    EFLed.setDragonNose(CRGB::Black);
+    delay(200);
+}
+
 /**
  * @brief Initial board setup. Called at boot / board reset.
  */
@@ -152,6 +210,7 @@ void setup() {
     // Init board
     EFBoard.setup();
     EFLed.init(30);
+    bootupAnimation();
     
     // Touchy stuff
     EFTouch.init();
