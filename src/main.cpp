@@ -145,6 +145,9 @@ void _softBrownOutHandler() {
     }
 }
 
+/**
+ * @brief Calculates a wave animation. Used by bootupAnimation()
+ */
 float wave_function(float x, float start, float end, float amplitude) {
     if (x < start || x > end) {
         return 0;
@@ -153,6 +156,9 @@ float wave_function(float x, float start, float end, float amplitude) {
     return amplitude * std::sin(normalized_x);
 }
 
+/**
+ * @brief Displays a fancy bootup animation
+ */
 void bootupAnimation() {
     CRGB data[EFLED_TOTAL_NUM];
     fill_solid(data, EFLED_TOTAL_NUM, CRGB::Black);
