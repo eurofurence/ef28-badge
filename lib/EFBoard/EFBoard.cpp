@@ -70,6 +70,9 @@ void EFBoardClass::setup() {
     pinMode(EFBOARD_PIN_VBAT, INPUT);
     LOG_INFO("(EFBoard) Initialized battery sense ADC")
 
+    // Seed rnd
+    randomSeed(analogRead(0));
+
     // Check power state
     const EFBoardPowerState pwrstate = this->getPowerState();
     if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {

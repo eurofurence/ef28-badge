@@ -158,7 +158,6 @@ class EFBoardClass {
          * @brief Writes a credit block to the serial console
          */
         void printCredits();
-        
 
 };
 
