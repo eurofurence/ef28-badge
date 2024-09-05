@@ -220,8 +220,6 @@ struct AnimateSnake : public FSMState {
  */
 struct AnimateHeartbeat : public FSMState {
     uint32_t tick = 0;
-    uint8_t currentHue = 0;
-    uint8_t currentTickIncrease = 1;
 
     virtual const char* getName() override;
     virtual bool shouldBeRemembered() override;

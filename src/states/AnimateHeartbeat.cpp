@@ -38,7 +38,6 @@ const unsigned int AnimateHeartbeat::getTickRateMs() {
 }
 
 void AnimateHeartbeat::entry() {
-    currentHue = random(0, 255);
     this->tick = 0;
 }
 
@@ -58,13 +57,13 @@ void AnimateHeartbeat::run() {
         intensity = intensity < 0.0 ? 0.0 : intensity;
 
         uint8_t value = static_cast<uint8_t>(intensity * 255);
-        data[i] = CHSV(currentHue, 255, value);
+        data[i] = CHSV(this->globals->animHeartbeatHue, 255, value);
     }
 
     EFLed.setAll(data);
 
     // Prepare next tick
-    this->tick = this->tick + currentTickIncrease + 1;
+    this->tick = this->tick + this->globals->animHeartbeatSpeed + 1;
 }
 
 std::unique_ptr<FSMState> AnimateHeartbeat::touchEventFingerprintShortpress() {
@@ -72,15 +71,17 @@ std::unique_ptr<FSMState> AnimateHeartbeat::touchEventFingerprintShortpress() {
 }
 
 std::unique_ptr<FSMState> AnimateHeartbeat::touchEventNoseRelease() {
-    uint8_t oldHue = currentHue;
-    currentHue = random(0, 255);
-    if (abs(oldHue - currentHue) < 20) {
+    uint8_t oldHue = this->globals->animHeartbeatHue;
+    this->globals->animHeartbeatHue = random(0, 255);
+    if (abs(oldHue - this->globals->animHeartbeatHue) < 20) {
         // If random is too close to last one, make it more different
-        currentHue = (currentHue + 20) % 255;
+        this->globals->animHeartbeatHue = (this->globals->animHeartbeatHue + 20) % 255;
     }
+    this->is_globals_dirty = true;
+
     EFLed.setDragonEye(CRGB::Black);
     delay(100);
-    EFLed.setDragonEye(CHSV(currentHue, 255, 255));
+    EFLed.setDragonEye(CHSV(this->globals->animHeartbeatHue, 255, 255));
     delay(300);
     EFLed.setDragonEye(CRGB::Black);
 
@@ -89,19 +90,20 @@ std::unique_ptr<FSMState> AnimateHeartbeat::touchEventNoseRelease() {
 }
 
 std::unique_ptr<FSMState> AnimateHeartbeat::touchEventNoseShortpress() {
-    currentTickIncrease = (currentTickIncrease + 1) % 3;
+    this->globals->animHeartbeatSpeed = (this->globals->animHeartbeatSpeed + 1) % 3;
+    this->is_globals_dirty = true;
 
     CRGB data[EFLED_EFBAR_NUM];
     fill_solid(data, EFLED_EFBAR_NUM, CRGB::Black);
     EFLed.setEFBar(data);
     delay(100);
-    fill_solid(data, currentTickIncrease + 1, CRGB::Red);
+    fill_solid(data, this->globals->animHeartbeatSpeed + 1, CRGB::Red);
     EFLed.setEFBar(data);
     delay(300);
-    fill_solid(data, currentTickIncrease + 1, CRGB::Black);
+    fill_solid(data, this->globals->animHeartbeatSpeed + 1, CRGB::Black);
     EFLed.setEFBar(data);
     delay(200);
-    fill_solid(data, currentTickIncrease + 1, CRGB::Red);
+    fill_solid(data, this->globals->animHeartbeatSpeed + 1, CRGB::Red);
     EFLed.setEFBar(data);
     delay(400);
 
