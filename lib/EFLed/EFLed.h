@@ -74,6 +74,14 @@ class EFLedClass {
     public:
 
         /**
+        * @brief Structure to hold x and y coordinates in millimeters
+        */
+        struct LEDPosition {
+          int x; // X coordinate in millimeters
+          int y; // Y coordinate in millimeters
+        };
+
+        /**
          * @brief Constructs a new EFLed instance.
          */
         EFLedClass();
@@ -221,6 +229,12 @@ class EFLedClass {
          */
         void fillEFBarProportionally(uint8_t percent, const CRGB color_on, const CRGB color_off);
 
+        /**
+         * @brief Gets the position of the LED in millimeters relative to the upper left corner of the badge
+         *
+         * @param idx Number of the LED
+         */
+        static LEDPosition getLEDPosition(uint8_t idx);
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFLED)
