@@ -45,9 +45,10 @@ EFBoardClass::EFBoardClass()
 
 void EFBoardClass::setup() {
     // Setup serial
-    delay(EFBOARD_SERIAL_INIT_DELAY_MS);
+    // If flashing often fails, you can add a safety-backoff delay before running serial which helps with flashing
+    //delay(2000);
     EFBOARD_SERIAL_DEVICE.begin(EFBOARD_SERIAL_BAUD);
-    delay(EFBOARD_SERIAL_INIT_DELAY_MS);
+    delay(50);
 
     LOG("\r\n");
     this->printCredits();
