@@ -67,6 +67,8 @@ The badge firmware is built using [PlatformIO](https://platformio.org/), an
 extension for [Visual Studio Code](https://code.visualstudio.com/) that allows
 beginners to quickly get hacking.
 
+### Building with Visual Studio Code (VCS)
+
 To set up your development environment, you need to:
 
 1. Install Visual Studio Code and PlatformIO, as described in the official
@@ -82,7 +84,7 @@ may need to be downloaded_
 
 ![Screenshot: Building the firmware using VS Code](docs/assets/vscode_build.png)
 
-**Using PlatformUI from the CLI**:
+### Building from CLI
 
 You can archive most things with the `pio` command from PlatformIO.
 
@@ -142,6 +144,18 @@ prior to the first flashing._
 ![Screenshot: Flashing the firmware via USB using VS Code](docs/assets/vscode_upload_usb.png)
 
 
+#### Notes and Pitfalls
+
+If you encounter issues flashing via USB, try the following:
+
+* Some USB cables or ports are flaky. Try a different USB port or change the
+  USB-C -> USB-C cable to a USB-A -> USB-C or vice versa.
+* Make sure no program is opening the serial port while you flash. For example
+  serial monitors in auto-connect mode.
+* If it still fails, bridge the boot-pins when turning on. The badge should
+  load into a simple bootloader and wait.
+
+
 ### Over-the-Air Updates (OTA)
 
 If you want to flash the badge using over-the-air updates (OTA), it must be
@@ -177,33 +191,15 @@ For convenience, here is an exported PDF version of the schematics:
 [![Screenshot: Schematics thumbnail](docs/assets/efbadge-schematic_thumb.png)](hardware/efbadge-schematic.pdf)
 
 
+# Useful links
+
+* ESP32-S3 Pin-out and functions: https://github.com/atomic14/esp32-s3-pinouts
+
+
 # Credits
 
 This badge was designed, crafted and programmed with much love and dedication
-by: DarkRat, Token, Irah, Honigeintopf. The wonderful artwork is done by
-[Fleeks](https://www.furaffinity.net/user/fleeks).
+by: [DarkRat](https://github.com/dunkelratte), [Token](https://github.com/TokenRat),
+[Irah](https://github.com/tridekdu), [Honigeintopf](https://github.com/ngandrass).
 
-
-# License
-
-MIT License
-
-Copyright 2024 Eurofurence e.V.
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the “Software”),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
+The wonderful artwork is done by [Fleeks](https://www.furaffinity.net/user/fleeks).
