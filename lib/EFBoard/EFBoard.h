@@ -160,9 +160,6 @@ class EFBoardClass {
          */
         void printCredits();
 
-    private:
-        void bootupAnimation();
-
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFBOARD)
