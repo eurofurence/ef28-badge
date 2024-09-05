@@ -82,7 +82,7 @@ void EFLedClass::enablePower() {
     pinMode(EFLED_PIN_5VBOOST_ENABLE, OUTPUT);
     digitalWrite(EFLED_PIN_5VBOOST_ENABLE, HIGH);
     LOG_INFO("(EFLed) Enabled +5V boost converter");
-    delay(10);
+    delay(1);
 }
 
 void EFLedClass::disablePower() {
