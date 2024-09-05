@@ -67,6 +67,8 @@ The badge firmware is built using [PlatformIO](https://platformio.org/), an
 extension for [Visual Studio Code](https://code.visualstudio.com/) that allows
 beginners to quickly get hacking.
 
+### Building with Visual Studio Code (VCS)
+
 To set up your development environment, you need to:
 
 1. Install Visual Studio Code and PlatformIO, as described in the official
@@ -82,7 +84,7 @@ may need to be downloaded_
 
 ![Screenshot: Building the firmware using VS Code](docs/assets/vscode_build.png)
 
-**Using PlatformUI from the CLI**:
+### Building from CLI
 
 You can archive most things with the `pio` command from PlatformIO.
 
@@ -90,17 +92,6 @@ You can archive most things with the `pio` command from PlatformIO.
 * Upload firmware: `pio run --target upload`
 * Clean generated files: `pio run --target clean`
 * Attach serial monitor: `pio device monitor`
-
-**Note:**
-
-If you encounter issues flashing via USB, try the following:
-
-* Some USB cables or ports are flaky. Try a different USB port or change the
-  USB-C -> USB-C cable to a USB-A -> USB-C or vice versa.
-* Make sure no program is opening the serial port while you flash. For example
-  serial monitors in auto-connect mode.
-* If it still fails, bridge the boot-pins when turning on. The badge should
-  load into a simple bootloader and wait.
 
 
 ## Component Overview
@@ -151,6 +142,18 @@ _Note: Linux users might need to install the
 prior to the first flashing._
 
 ![Screenshot: Flashing the firmware via USB using VS Code](docs/assets/vscode_upload_usb.png)
+
+
+#### Notes and Pitfalls
+
+If you encounter issues flashing via USB, try the following:
+
+* Some USB cables or ports are flaky. Try a different USB port or change the
+  USB-C -> USB-C cable to a USB-A -> USB-C or vice versa.
+* Make sure no program is opening the serial port while you flash. For example
+  serial monitors in auto-connect mode.
+* If it still fails, bridge the boot-pins when turning on. The badge should
+  load into a simple bootloader and wait.
 
 
 ### Over-the-Air Updates (OTA)
