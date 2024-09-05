@@ -95,9 +95,12 @@ You can archive most things with the `pio` command from PlatformIO.
 
 If you encounter issues flashing via USB, try the following:
 
-* Some USB cables or ports are flaky. Try a different USB port or change the USB-C -> USB-C cable to a USB-A -> USB-C or vice versa.
-* Make sure no program is opening the serial port while you flash. For example serial monitors in auto-connect mode.
-* If it still fails, bridge the boot-pins when turning on. The badge should load into a simple bootloader and wait.
+* Some USB cables or ports are flaky. Try a different USB port or change the
+  USB-C -> USB-C cable to a USB-A -> USB-C or vice versa.
+* Make sure no program is opening the serial port while you flash. For example
+  serial monitors in auto-connect mode.
+* If it still fails, bridge the boot-pins when turning on. The badge should
+  load into a simple bootloader and wait.
 
 
 ## Component Overview
@@ -189,8 +192,11 @@ For convenience, here is an exported PDF version of the schematics:
 
 * ESP32-S3 Pin-out and functions: https://github.com/atomic14/esp32-s3-pinouts
 
+
 # Credits
 
 This badge was designed, crafted and programmed with much love and dedication
-by: [DarkRat](https://github.com/dunkelratte), [Token](https://github.com/TokenRat), [Irah](https://github.com/tridekdu), [Honigeintopf](https://github.com/ngandrass). The wonderful artwork is done by
-[Fleeks](https://www.furaffinity.net/user/fleeks).
+by: [DarkRat](https://github.com/dunkelratte), [Token](https://github.com/TokenRat),
+[Irah](https://github.com/tridekdu), [Honigeintopf](https://github.com/ngandrass).
+
+The wonderful artwork is done by [Fleeks](https://www.furaffinity.net/user/fleeks).
