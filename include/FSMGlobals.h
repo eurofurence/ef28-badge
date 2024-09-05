@@ -42,6 +42,8 @@ typedef struct {
     uint8_t prideFlagModeIdx = 1;   //!< DisplayPrideFlag: Mode selector
     uint8_t animRainbowIdx = 0;     //!< AnimateRainbow: Mode selector
     uint8_t animSnakeIdx = 0;       //!< AnimateSnake: Mode selector
+    uint8_t animHeartbeatHue = 0;   //!< AnimateHeartbeat: Hue selector
+    uint8_t animHeartbeatSpeed = 1; //!< AnimateHeartbeat: Speed selector
 } FSMGlobals;
 
 #endif /* FSMGLOBALS_H_ */
