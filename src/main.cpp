@@ -35,7 +35,7 @@
 #include <EFTouch.h>
 
 #include "FSM.h"
-#include "secrets.h"
+#include "FSMGlobals.h"
 #include "util.h"
 
 // Global objects and states
@@ -43,6 +43,7 @@ constexpr unsigned int INTERVAL_BATTERY_CHECK = 60000;
 // Initalizing the board with a brightness above 49 can cause stability issues!
 constexpr uint8_t ABSOLUTE_MAX_BRIGHTNESS = 45;
 FSM fsm(10);
+FSMGlobals globals;
 EFBoardPowerState pwrstate;
 
 // Task counters
@@ -217,6 +218,7 @@ void setup() {
     // Init board
     EFBoard.setup();
     EFLed.init(ABSOLUTE_MAX_BRIGHTNESS);
+    EFLed.setBrightnessPercent(globals.ledBrightnessPercent);
     bootupAnimation();
     
     // Touchy stuff

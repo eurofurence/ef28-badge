@@ -251,15 +251,19 @@ struct OTAUpdate : public FSMState {
  */
 struct MenuMain : public FSMState {
     uint8_t menucursor_idx = 0;
+    uint32_t tick = 0;
 
     virtual const char* getName() override;
+    virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;
+    virtual void run() override;
     virtual void exit() override;
 
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+    virtual std::unique_ptr<FSMState> touchEventNoseLongpress() override;
 };
 
 #endif /* FSM_STATE_H_ */
