@@ -95,7 +95,7 @@ std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintShortpress() {
 }
 
 std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintRelease() {
-    this->globals->animMatrixIdx = (this->globals->animMatrixIdx + 1) % 3;
+    this->globals->animMatrixIdx = (this->globals->animMatrixIdx + 1) % 4;
     this->is_globals_dirty = true;
     this->tick = 0;
 
