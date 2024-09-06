@@ -32,7 +32,7 @@
 /**
  * @brief Number of registered menu items
  */
-#define MENUMAIN_NUM_MENU_ITEMS 6
+#define MENUMAIN_NUM_MENU_ITEMS 7
 
 
 const char *MenuMain::getName() {
@@ -64,7 +64,8 @@ std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
         case 2: return std::make_unique<AnimateMatrix>();
         case 3: return std::make_unique<AnimateSnake>();
         case 4: return std::make_unique<AnimateHeartbeat>();
-        case 5: return std::make_unique<OTAUpdate>();
+        case 5: return std::make_unique<AnimatePerlin>();
+        case 6: return std::make_unique<OTAUpdate>();
         default: return nullptr;
     }
 }
