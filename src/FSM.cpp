@@ -27,6 +27,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 
+#include <EFLed.h>
 #include <EFLogging.h>
 
 #include "FSM.h"
@@ -48,8 +49,13 @@ FSM::~FSM() {
 }
 
 void FSM::resume() {
+    // Restore FSM data
     this->restoreGlobals();
+
+    // Restore LED brightness setting
+    EFLed.setBrightnessPercent(this->globals->ledBrightnessPercent);
     
+    // Resume last remembered state
     switch (this->globals->resumeStateIdx) {
         case 0: this->transition(std::make_unique<DisplayPrideFlag>()); break;
         case 1: this->transition(std::make_unique<AnimateRainbow>()); break;
@@ -222,6 +228,8 @@ void FSM::persistGlobals() {
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     pref.putUInt("animHbSpeed", this->globals->animHeartbeatSpeed);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
+    pref.putUInt("ledBrightPcent", this->globals->ledBrightnessPercent);
+    LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
     pref.end();
 }
 
@@ -242,5 +250,7 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     this->globals->animHeartbeatSpeed= pref.getUInt("animHbSpeed", 1);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
+    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightPcent", 40);
+    LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
     pref.end();
 }
