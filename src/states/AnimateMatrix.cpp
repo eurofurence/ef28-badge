@@ -30,10 +30,15 @@
 #include "FSMState.h"
 
 const int hue_list[] = {
-        140,
-        175,
-        302,
-        195,
+    130,  // Start with matrix, I mean Eurofurence, green <3
+    160,
+    200,
+    240,
+    280,
+    320,
+    0,
+    40,
+    80,
 };
 
 const char* AnimateMatrix::getName() {
@@ -95,7 +100,7 @@ std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintShortpress() {
 }
 
 std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintRelease() {
-    this->globals->animMatrixIdx = (this->globals->animMatrixIdx + 1) % 4;
+    this->globals->animMatrixIdx = (this->globals->animMatrixIdx + 1) % 9;
     this->is_globals_dirty = true;
     this->tick = 0;
 
