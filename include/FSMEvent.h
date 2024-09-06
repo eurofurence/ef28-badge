@@ -34,6 +34,8 @@
  */
 enum class FSMEvent {
     NoOp,
+    AllShortpress,
+    AllLongpress,
     FingerprintTouch,
     FingerprintRelease,
     FingerprintShortpress,

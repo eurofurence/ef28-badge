@@ -96,10 +96,22 @@ void AnimateMatrix::run() {
 }
 
 std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     return std::make_unique<MenuMain>();
 }
 
+std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
+}
+
 std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintRelease() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     this->globals->animMatrixIdx = (this->globals->animMatrixIdx + 1) % 9;
     this->is_globals_dirty = true;
     this->tick = 0;
@@ -107,3 +119,7 @@ std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintRelease() {
     return nullptr;
 }
 
+std::unique_ptr<FSMState> AnimateMatrix::touchEventAllLongpress() {
+    this->toggleLock();
+    return nullptr;
+}

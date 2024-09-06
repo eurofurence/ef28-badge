@@ -37,6 +37,7 @@
 #define EFTOUCH_CALIBRATE_NUM_SAMPLES 10
 #define EFTOUCH_SHORTPRESS_DURATION_MS 450
 #define EFTOUCH_LONGPRESS_DURATION_MS  1800
+#define EFTOUCH_MULTITOUCH_COOLDOWN_MS 1000
 
 /**
  * @brief Driver for touch sensors
@@ -53,8 +54,12 @@ class EFTouchClass {
         touch_value_t noise_fingerprint;  //!< Calibrated noise floor for fingerprint touch pad
         touch_value_t noise_nose;         //!< Calibrated noise floor for nose touch pad 
 
-        unsigned long last_touch_millis_fingerprint;  //!< Timestamp when the fingerprint was last touched
-        unsigned long last_touch_millis_nose;         //!< Timestamp when the nose was last touched
+        volatile unsigned long last_release_millis_fingerprint; //!< Timestamp when the fingerprint was last released
+        volatile unsigned long last_release_millis_nose;        //!< Timestamp when the nose was last released
+        volatile unsigned long last_touch_millis_fingerprint;   //!< Timestamp when the fingerprint was last touched
+        volatile unsigned long last_touch_millis_nose;          //!< Timestamp when the nose was last touched
+        volatile unsigned long last_multitouch_short;           //!< Timestamp when the last short multitouch event was processed
+        volatile unsigned long last_multitouch_long;            //!< Timestamp when the last long multitouch event was processed
 
         void (*onFingerprintTouchIsr)(void);       //!< ISR to execute if the fingerprint is first touched
         void (*onFingerprintReleaseIsr)(void);     //!< ISR to execute if the fingerprint is fully released
@@ -65,6 +70,9 @@ class EFTouchClass {
         void (*onNoseReleaseIsr)(void);            //!< ISR to execute if the nose is fully released
         void (*onNoseShortpressIsr)(void);         //!< ISR to execute if the nose was held for at least a short amount of time
         void (*onNoseLongpressIsr)(void);          //!< ISR to execute if the nose was held for a long amount of time
+
+        void (*onAllShortpressIsr)(void);          //!< ISR to execute if all touch zones were held for at least a short amount of time
+        void (*onAllLongpressIsr)(void);           //!< ISR to execute if all touch zones were held for a long amount of time
 
     public:
 
