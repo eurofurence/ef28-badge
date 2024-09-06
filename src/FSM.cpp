@@ -27,6 +27,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 
+#include <EFLed.h>
 #include <EFLogging.h>
 
 #include "FSM.h"
@@ -48,8 +49,13 @@ FSM::~FSM() {
 }
 
 void FSM::resume() {
+    // Restore FSM data
     this->restoreGlobals();
+
+    // Restore LED brightness setting
+    EFLed.setBrightnessPercent(this->globals->ledBrightnessPercent);
     
+    // Resume last remembered state
     switch (this->globals->resumeStateIdx) {
         case 0: this->transition(std::make_unique<DisplayPrideFlag>()); break;
         case 1: this->transition(std::make_unique<AnimateRainbow>()); break;
