@@ -31,6 +31,7 @@
  * @brief Available touch zones
  */
 enum EFTouchZone {
+    All,
     Fingerprint,
     Nose
 };
