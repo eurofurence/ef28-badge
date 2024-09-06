@@ -40,7 +40,7 @@
 
 // Global objects and states
 constexpr unsigned int INTERVAL_BATTERY_CHECK = 60000;
-// Initalizing the board with a brightness above 49 can cause stability issues!
+// Initializing the board with a brightness above 48 can cause stability issues!
 constexpr uint8_t ABSOLUTE_MAX_BRIGHTNESS = 45;
 FSM fsm(10);
 EFBoardPowerState pwrstate;
