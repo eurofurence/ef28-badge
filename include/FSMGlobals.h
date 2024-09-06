@@ -45,6 +45,7 @@ typedef struct {
     uint8_t animSnakeIdx = 0;       //!< AnimateSnake: Mode selector
     uint8_t animHeartbeatHue = 0;   //!< AnimateHeartbeat: Hue selector
     uint8_t animHeartbeatSpeed = 1; //!< AnimateHeartbeat: Speed selector
+    uint8_t animPerlinSpeed    = 1; //!< AnimatePerlin: Speed selector
 } FSMGlobals;
 
 #endif /* FSMGLOBALS_H_ */
