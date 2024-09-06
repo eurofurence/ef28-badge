@@ -29,6 +29,12 @@
 
 #include "FSMState.h"
 
+const int hue_list[] = {
+        140,
+        175,
+        302,
+        195,
+};
 
 const char* AnimateMatrix::getName() {
     return "AnimateMatrix";
@@ -47,25 +53,27 @@ void AnimateMatrix::entry() {
 }
 
 void AnimateMatrix::run() {
-    // Prepare base pattern
+    // map the 360 degree hue value to a byte
+    int mappedHue = map(hue_list[this->globals->animMatrixIdx], 0, 359, 0, 255);
+
     std::vector<CRGB> dragon = {
         CRGB::Black,
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
+        CHSV(mappedHue, 255, 40),
+        CHSV(mappedHue, 255, 110),
+        CHSV(mappedHue, 255, 255),
         CRGB::Black,
         CRGB::Black
     };
 
     std::vector<CRGB> bar = {
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
+        CHSV(mappedHue, 255, 50),
+        CHSV(mappedHue, 255, 110),
+        CHSV(mappedHue, 255, 255),
         CRGB::Black,
         CRGB::Black,
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
+        CHSV(mappedHue, 255, 70),
+        CHSV(mappedHue, 255, 100),
+        CHSV(mappedHue, 255, 200),
         CRGB::Black,
         CRGB::Black,
         CRGB::Black,
@@ -85,3 +93,12 @@ void AnimateMatrix::run() {
 std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintShortpress() {
     return std::make_unique<MenuMain>();
 }
+
+std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintRelease() {
+    this->globals->animMatrixIdx = (this->globals->animMatrixIdx + 1) % 3;
+    this->is_globals_dirty = true;
+    this->tick = 0;
+
+    return nullptr;
+}
+

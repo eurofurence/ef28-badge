@@ -45,6 +45,7 @@ typedef struct {
     uint8_t animSnakeIdx = 0;       //!< AnimateSnake: Mode selector
     uint8_t animHeartbeatHue = 0;   //!< AnimateHeartbeat: Hue selector
     uint8_t animHeartbeatSpeed = 1; //!< AnimateHeartbeat: Speed selector
+    uint8_t animMatrixIdx = 0; //!< AnimateMatrix: Color selector
 
     uint8_t ledBrightnessPercent = 40;  //!< The global maximum brightness of the LEDs
 } FSMGlobals;

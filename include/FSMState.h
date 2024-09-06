@@ -193,6 +193,8 @@ struct AnimateMatrix : public FSMState {
     virtual void run() override;
 
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+
+    std::unique_ptr<FSMState> touchEventFingerprintRelease();
 };
 
 /**
