@@ -31,7 +31,7 @@
 
 #include "FSMState.h"
 
-#define ANIMATE_SNAKE_NUM_TOTAL 3  //!< Number of available animations
+#define ANIMATE_SNAKE_NUM_TOTAL 4  //!< Number of available animations
 #define ANIMATE_HUE_NUM_TOTAL 5   //!< Number of available hues
 
 /**
@@ -45,6 +45,7 @@ const struct {
     {.animate = &AnimateSnake::_animateSnake, .tickrate = 80},
     {.animate = &AnimateSnake::_animateKnightRider, .tickrate = 80},
     {.animate = &AnimateSnake::_animatePulse, .tickrate = 80},
+    {.animate = &AnimateSnake::_animateRandom, .tickrate = 80},
 };
 
 const CHSV hueList[] = {
@@ -54,6 +55,9 @@ const CHSV hueList[] = {
         CHSV(220, 255, 255),
         CHSV(0, 0, 255),
 };
+
+int randomLightList[EFLED_TOTAL_NUM] = {};
+
 const char* AnimateSnake::getName() {
     return "AnimateSnake";
 }
@@ -193,4 +197,26 @@ void AnimateSnake::_animatePulse() {
     pattern.insert(pattern.end(), patternSecondHalf.begin(), patternSecondHalf.end());
 
     EFLed.setEFBar(pattern.data());
+}
+
+void AnimateSnake::_animateRandom() {
+
+    // set a random LED to light up
+    if(tick % 2 == 0) {
+        randomLightList[random(0, EFLED_TOTAL_NUM-1)] = 255;
+    }
+
+    std::vector<CRGB> pattern;
+
+    // loop through all LED brighnesses and set it. Subtract it afterward to slowly dim them
+    for(int & i : randomLightList) {
+        CHSV color = hueList[this->globals->animSnakeHueIdx];
+        color.value = i;
+        pattern.insert(pattern.end(), color);
+        i -= 20;
+        if(i < 0) { i = 0; };
+    }
+
+
+    EFLed.setAll(pattern.data());
 }
