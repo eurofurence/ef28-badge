@@ -67,6 +67,10 @@ void AnimateSnake::run() {
 }
 
 std::unique_ptr<FSMState> AnimateSnake::touchEventFingerprintRelease() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     this->globals->animSnakeIdx++;
     this->is_globals_dirty = true;
     this->tick = 0;
@@ -81,7 +85,15 @@ std::unique_ptr<FSMState> AnimateSnake::touchEventFingerprintRelease() {
 }
 
 std::unique_ptr<FSMState> AnimateSnake::touchEventFingerprintShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     return std::make_unique<MenuMain>();
+}
+
+std::unique_ptr<FSMState> AnimateSnake::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
 }
 
 void AnimateSnake::_animateKnightRider() {
@@ -133,3 +145,7 @@ void AnimateSnake::_animateSnake() {
     EFLed.setAll(pattern.data());
 }
 
+std::unique_ptr<FSMState> AnimateSnake::touchEventAllLongpress() {
+    this->toggleLock();
+    return nullptr;
+}

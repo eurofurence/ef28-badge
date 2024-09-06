@@ -195,6 +195,14 @@ void FSM::handle(unsigned int num_events) {
                 LOGF_DEBUG("(FSM) Processing Event: NoseLongpress@%s\r\n", this->state->getName());
                 next = this->state->touchEventNoseLongpress();
                 break;
+            case FSMEvent::AllShortpress:
+                LOGF_DEBUG("(FSM) Processing Event: AllShortpress@%s\r\n", this->state->getName());
+                next = this->state->touchEventAllShortpress();
+                break;
+            case FSMEvent::AllLongpress:
+                LOGF_DEBUG("(FSM) Processing Event: AllLongpress@%s\r\n", this->state->getName());
+                next = this->state->touchEventAllLongpress();
+                break;
             case FSMEvent::NoOp:
                 return;
             default:

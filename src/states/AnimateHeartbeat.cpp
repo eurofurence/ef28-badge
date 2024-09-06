@@ -67,10 +67,22 @@ void AnimateHeartbeat::run() {
 }
 
 std::unique_ptr<FSMState> AnimateHeartbeat::touchEventFingerprintShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     return std::make_unique<MenuMain>();
 }
 
+std::unique_ptr<FSMState> AnimateHeartbeat::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
+}
+
 std::unique_ptr<FSMState> AnimateHeartbeat::touchEventNoseRelease() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     uint8_t oldHue = this->globals->animHeartbeatHue;
     this->globals->animHeartbeatHue = random(0, 255);
     if (abs(oldHue - this->globals->animHeartbeatHue) < 20) {
@@ -90,6 +102,10 @@ std::unique_ptr<FSMState> AnimateHeartbeat::touchEventNoseRelease() {
 }
 
 std::unique_ptr<FSMState> AnimateHeartbeat::touchEventNoseShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     this->globals->animHeartbeatSpeed = (this->globals->animHeartbeatSpeed + 1) % 3;
     this->is_globals_dirty = true;
 
@@ -107,5 +123,10 @@ std::unique_ptr<FSMState> AnimateHeartbeat::touchEventNoseShortpress() {
     EFLed.setEFBar(data);
     delay(400);
 
+    return nullptr;
+}
+
+std::unique_ptr<FSMState> AnimateHeartbeat::touchEventAllLongpress() {
+    this->toggleLock();
     return nullptr;
 }

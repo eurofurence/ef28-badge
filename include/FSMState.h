@@ -41,6 +41,7 @@ class FSMState {
     
         std::shared_ptr<FSMGlobals> globals;  //!< Pointer to global FSM state variables
         bool is_globals_dirty;                //!< Marks globals as dirty, causing it to be persisted to NVS
+        bool is_locked;                       //!< True, if the state should be considered as locked
 
     public:
         /**
@@ -59,6 +60,29 @@ class FSMState {
          * after globals were successfully persisted.
          */
         void resetGlobalsDirty();
+
+        /**
+         * @brief Marks the current state as locked. Locked states should not accept any
+         * commands apart from unlock.
+         */
+        void lock();
+        
+        /**
+         * @brief Unlocks a previously locked state
+         */
+        void unlock();
+
+        /**
+         * @brief Toggles the lock state of this state
+         */
+        void toggleLock();
+
+        /**
+         * @brief Determins if this state is currently locked
+         * 
+         * @return True, if this state is currently locked
+         */
+        bool isLocked();
 
         /**
          * @brief Provides access to the name of this state
@@ -164,8 +188,10 @@ struct DisplayPrideFlag : public FSMState {
     virtual void entry() override;
     virtual void run() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 };
 
 /**
@@ -181,8 +207,10 @@ struct AnimateRainbow : public FSMState {
     virtual void entry() override;
     virtual void run() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 
     void _animateRainbow();
     void _animateRainbowCircle();
@@ -201,9 +229,10 @@ struct AnimateMatrix : public FSMState {
     virtual void entry() override;
     virtual void run() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
-
-    std::unique_ptr<FSMState> touchEventFingerprintRelease();
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 };
 
 /**
@@ -219,8 +248,10 @@ struct AnimateSnake : public FSMState {
     virtual void entry() override;
     virtual void run() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 
     void _animateSnake();
     void _animateKnightRider();
@@ -239,9 +270,11 @@ struct AnimateHeartbeat : public FSMState {
     virtual void entry() override;
     virtual void run() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventNoseRelease() override;
     virtual std::unique_ptr<FSMState> touchEventNoseShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 };
 
 /**
@@ -254,6 +287,7 @@ struct OTAUpdate : public FSMState {
     virtual void run() override;
     virtual void exit() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
 };
 

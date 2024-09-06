@@ -68,6 +68,10 @@ void AnimateRainbow::run() {
 }
 
 std::unique_ptr<FSMState> AnimateRainbow::touchEventFingerprintRelease() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     this->globals->animRainbowIdx++;
     this->is_globals_dirty = true;
     this->tick = 0;
@@ -82,7 +86,15 @@ std::unique_ptr<FSMState> AnimateRainbow::touchEventFingerprintRelease() {
 }
 
 std::unique_ptr<FSMState> AnimateRainbow::touchEventFingerprintShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     return std::make_unique<MenuMain>();
+}
+
+std::unique_ptr<FSMState> AnimateRainbow::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
 }
 
 void AnimateRainbow::_animateRainbow() {
@@ -93,4 +105,9 @@ void AnimateRainbow::_animateRainbowCircle() {
     CRGB data[EFLED_TOTAL_NUM];
     fill_rainbow_circular(data, EFLED_TOTAL_NUM, (tick % 128)*2, true);
     EFLed.setAll(data);
+}
+
+std::unique_ptr<FSMState> AnimateRainbow::touchEventAllLongpress() {
+    this->toggleLock();
+    return nullptr;
 }

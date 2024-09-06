@@ -61,3 +61,7 @@ void OTAUpdate::exit() {
 std::unique_ptr<FSMState> OTAUpdate::touchEventFingerprintShortpress() {
     return std::make_unique<MenuMain>();
 }
+
+std::unique_ptr<FSMState> OTAUpdate::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
+}
