@@ -127,7 +127,7 @@ std::unique_ptr<FSMState> MenuMain::touchEventNoseLongpress() {
         fill_solid(data, EFLED_EFBAR_NUM, CRGB::Black);
         fill_solid(data, map(interpolatedBrightness, 0, 100, 0, EFLED_EFBAR_NUM), CRGB(100, 100, 100));
         EFLed.setEFBar(data);
-        delay(50);
+        delay(40);
     }
     fill_solid(data, map(newBrightness, 0, 100, 0, EFLED_EFBAR_NUM), CRGB(100, 100, 100));
     EFLed.setEFBar(data);

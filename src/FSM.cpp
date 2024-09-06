@@ -250,7 +250,7 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     this->globals->animHeartbeatSpeed= pref.getUInt("animHbSpeed", 1);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
-    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightnessP", 40);
+    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightPcent", 40);
     LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
     pref.end();
 }

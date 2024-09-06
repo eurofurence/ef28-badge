@@ -217,7 +217,7 @@ void setup() {
     // Init board
     EFBoard.setup();
     EFLed.init(ABSOLUTE_MAX_BRIGHTNESS);
-    EFLed.setBrightnessPercent(40);
+    EFLed.setBrightnessPercent(40);  // We do not have access to the settings yet, default to 40
     bootupAnimation();
     
     // Touchy stuff
