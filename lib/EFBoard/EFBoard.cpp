@@ -139,6 +139,8 @@ const char *EFBoardClass::getWakeupReason() {
 
 const float EFBoardClass::getBatteryVoltage() {
     // voltageBattery = adcValue * voltPerADCStep * voltageDividerRatio
+    // adc_cal_raw_to_voltage
+    // esp_adc_cal_raw_to_voltage(analogRead(EFBOARD_PIN_VBAT));
     return (analogRead(EFBOARD_PIN_VBAT) * (3.3 / 4095.0)) * ((51.1 + 100.0) / 100.0);
 }
 
@@ -169,7 +171,22 @@ const EFBoardPowerState EFBoardClass::updatePowerState() {
     if (!this->isBatteryPowered()) {
         this->power_state = EFBoardPowerState::USB;
     } else {
-        const float vbat = this->getBatteryVoltage();
+        float vbat = this->getBatteryVoltage();
+
+        // if (vbat <= EFBOARD_BROWN_OUT_SOFT) {
+        //     // A low-battery state could be a momentary spike that we can handle and do not need to shut off
+        //     // We take the highest of three measurements to make sure
+        //     delay(10);
+        //     float newVbat = this->getBatteryVoltage();
+        //     vbat = newVbat > vbat ? newVbat : vbat;
+        //     delay(10);
+        //     newVbat = this->getBatteryVoltage();
+        //     vbat = newVbat > vbat ? newVbat : vbat;
+        //     delay(10);
+        //     newVbat = this->getBatteryVoltage();
+        //     vbat = newVbat > vbat ? newVbat : vbat;
+        // }
+
         if (vbat <= EFBOARD_BROWN_OUT_HARD || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
             this->power_state = EFBoardPowerState::BAT_BROWN_OUT_HARD;
         } else if (vbat <= EFBOARD_BROWN_OUT_SOFT || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
