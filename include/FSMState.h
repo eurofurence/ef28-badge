@@ -138,6 +138,15 @@ class FSMState {
          */
         virtual std::unique_ptr<FSMState> touchEventNoseLongpress();
 
+        /**
+         * @brief Executed on FSMEvent::AllShortpress
+         */
+        virtual std::unique_ptr<FSMState> touchEventAllShortpress();
+
+        /**
+         * @brief Executed on FSMEvent::AllLongpress
+         */
+        virtual std::unique_ptr<FSMState> touchEventAllLongpress();
 };
 
 /**

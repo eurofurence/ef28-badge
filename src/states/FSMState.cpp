@@ -87,3 +87,11 @@ std::unique_ptr<FSMState> FSMState::touchEventNoseShortpress() {
 std::unique_ptr<FSMState> FSMState::touchEventNoseLongpress() {
     return nullptr;
 }
+
+std::unique_ptr<FSMState> FSMState::touchEventAllShortpress() {
+    return nullptr;
+}
+
+std::unique_ptr<FSMState> FSMState::touchEventAllLongpress() {
+    return nullptr;
+}

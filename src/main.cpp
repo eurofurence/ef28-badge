@@ -246,6 +246,25 @@ void setup() {
  */
 void loop() {
     // Handler: ISR Events
+    if (isrEvents.allLongpress) {
+        fsm.queueEvent(FSMEvent::AllLongpress);
+        isrEvents.noseLongpress = false;
+        isrEvents.noseShortpress = false;
+        isrEvents.noseRelease = false;
+        isrEvents.fingerprintLongpress = false;
+        isrEvents.fingerprintShortpress = false;
+        isrEvents.fingerprintRelease = false;
+        isrEvents.allLongpress = false;
+        isrEvents.allShortpress = false;
+    }
+    if (isrEvents.allShortpress) {
+        fsm.queueEvent(FSMEvent::AllShortpress);
+        isrEvents.noseShortpress = false;
+        isrEvents.noseRelease = false;
+        isrEvents.fingerprintShortpress = false;
+        isrEvents.fingerprintRelease = false;
+        isrEvents.allShortpress = false;
+    }
     if (isrEvents.fingerprintTouch) {
         fsm.queueEvent(FSMEvent::FingerprintTouch);
         isrEvents.fingerprintTouch = false;
@@ -284,15 +303,6 @@ void loop() {
     if (isrEvents.noseRelease) {
         fsm.queueEvent(FSMEvent::NoseRelease);
         isrEvents.noseRelease = false;
-    }
-    if (isrEvents.allLongpress) {
-        LOG_INFO("ALL LONG");
-        isrEvents.allLongpress = false;
-        isrEvents.allShortpress = false;
-    }
-    if (isrEvents.allShortpress) {
-        LOG_INFO("ALL SHORT");
-        isrEvents.allShortpress = false;
     }
 
     // Task: Handle FSM
