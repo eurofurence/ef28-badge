@@ -61,7 +61,7 @@ void EFLedClass::init() {
     this->init(EFLED_MAX_BRIGHTNESS_DEFAULT);
 }
 
-void EFLedClass::init(const uint8_t max_brightness) {
+void EFLedClass::init(const uint8_t absolute_max_brightness) {
     for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
         this->led_data[i] = CRGB::Black;
     }
@@ -71,7 +71,7 @@ void EFLedClass::init(const uint8_t max_brightness) {
     FastLED.addLeds<WS2812B, EFLED_PIN_LED_DATA, GRB>(this->led_data, EFLED_TOTAL_NUM);
     LOGF_DEBUG("(EFLed) Added new WS2812B: %d LEDs @ PIN %d\r\n", EFLED_TOTAL_NUM, EFLED_PIN_LED_DATA);
 
-    this->max_brightness = max_brightness;
+    this->max_brightness = absolute_max_brightness;
     FastLED.setBrightness(this->max_brightness);
     LOGF_DEBUG("(EFLed) Set max_brightness=%d\r\n", this->max_brightness)
 

@@ -34,7 +34,7 @@ bool AnimateHeartbeat::shouldBeRemembered() {
 }
 
 const unsigned int AnimateHeartbeat::getTickRateMs() {
-    return 70;
+    return 60;
 }
 
 void AnimateHeartbeat::entry() {

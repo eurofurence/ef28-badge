@@ -216,7 +216,7 @@ struct AnimateSnake : public FSMState {
 };
 
 /**
- * @brief Displays pusling color
+ * @brief Displays pulsing color
  */
 struct AnimateHeartbeat : public FSMState {
     uint32_t tick = 0;

@@ -97,10 +97,10 @@ class EFLedClass {
          * @brief Initializes this EFLed instance. Creates internal data structures,
          * resets FastLED library and initializes power circuit.
          *
-         * @param max_brightness Maximum raw brightness (0-255) the LEDs will
+         * @param absolute_max_brightness Maximum raw brightness (0-255) the LEDs will
          * be allowed to be set to.
          */
-        void init(const uint8_t max_brightness);
+        void init(const uint8_t absolute_max_brightness);
 
         /**
          * @brief Enables the +5V power domain
