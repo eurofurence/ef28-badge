@@ -28,10 +28,12 @@
 
 #include "EFTouch.h"
 
+constexpr unsigned int DEFAULT_DETECTION_STEP = 10000;
+
 EFTouchClass::EFTouchClass()
 : pin_fingerprint(EFTOUCH_PIN_TOUCH_FINGERPRINT)
 , pin_nose(EFTOUCH_PIN_TOUCH_NOSE)
-, detection_step(10000)
+, detection_step(DEFAULT_DETECTION_STEP)
 , noise_fingerprint(0)
 , noise_nose(0)
 , last_touch_millis_fingerprint(0)
@@ -53,7 +55,7 @@ EFTouchClass::~EFTouchClass() {
 }
 
 void EFTouchClass::init() {
-    this->init(10000, EFTOUCH_PIN_TOUCH_FINGERPRINT, EFTOUCH_PIN_TOUCH_NOSE);
+    this->init(DEFAULT_DETECTION_STEP, EFTOUCH_PIN_TOUCH_FINGERPRINT, EFTOUCH_PIN_TOUCH_NOSE);
 }
 
 void EFTouchClass::init(touch_value_t detection_step, uint8_t pin_fingerprint, uint8_t pin_nose) {
@@ -76,6 +78,7 @@ void EFTouchClass::init(touch_value_t detection_step, uint8_t pin_fingerprint, u
     LOGF_DEBUG("(EFTouch) Registered: pin_fingerprint=%d pin_nose=%d\r\n", pin_fingerprint, pin_nose);
 
     this->calibrate();
+    this->longpressAlreadyRegisteredByCheckNose = false;
     this->enableInterrupts(EFTouchZone::Fingerprint);
     this->enableInterrupts(EFTouchZone::Nose);
 }
@@ -137,6 +140,37 @@ uint8_t EFTouchClass::readNose() {
         return 0;
     } else {
         return (reading - this->noise_nose) / this->detection_step;
+    }
+}
+
+void EFTouchClass::checkForLongpressEvents() {
+
+    // const bool currentStateNose = this->isNoseTouched();
+    // const bool raising_flank = this->lastStateNose == false && currentStateNose == true;
+    // if (raising_flank) {
+    //     this->lastStateNose = currentStateNose;
+    //     // Just started pressing
+    //     // The ISR *should* have run already and updated last_touch_millis_nose, but some reason this does not always happen
+    //     // So we have to manually do it here.
+    //     auto ms = this->last_touch_millis_nose;
+    //     LOGF_INFO("XXX Detected touch, updating time: %d\r\n", ms);
+    //     this->last_touch_millis_nose = millis();
+    //     return;
+    // }
+
+    if (this->onNoseLongpressIsr == nullptr || this->longpressAlreadyRegisteredByCheckNose == true || this->isNoseTouched() == false) {
+        // No interrupt method configured or
+        //  we have already triggered and waiting for a reset or
+        //  there is no touch -> do nothing
+        return;
+    }
+
+    auto ms = this->last_touch_millis_nose;
+    if (this->last_touch_millis_nose + EFTOUCH_LONGPRESS_DURATION_MS < millis()) {
+        longpressAlreadyRegisteredByCheckNose = true;
+        LOGF_INFO("XXX ISR Event by checkForLongpressEvent. last touch: %d\r\n", ms);
+        LOGF_INFO("XXX isr Event by checkForLongpressEvent. current millis: %d\r\n", millis());
+        this->onNoseLongpressIsr();
     }
 }
 
@@ -206,6 +240,7 @@ void ARDUINO_ISR_ATTR EFTouchClass::_handleInterrupt(EFTouchZone zone, bool rais
                     this->onFingerprintTouchIsr();
                 }
             } else {
+                // Release
                 // Fire onFingerprintShortpressIsr() if applicable
                 if (this->onFingerprintShortpressIsr != nullptr) {
                     if (this->last_touch_millis_fingerprint + EFTOUCH_SHORTPRESS_DURATION_MS < millis()) {
@@ -226,6 +261,8 @@ void ARDUINO_ISR_ATTR EFTouchClass::_handleInterrupt(EFTouchZone zone, bool rais
             break;
         case EFTouchZone::Nose:
             if (raising_flank) {
+                // longpressAlreadyRegisteredByCheckNose = false;
+
                 // Register first touch timestamp
                 this->last_touch_millis_nose = millis();
 
@@ -234,13 +271,22 @@ void ARDUINO_ISR_ATTR EFTouchClass::_handleInterrupt(EFTouchZone zone, bool rais
                     this->onNoseTouchIsr();
                 }
             } else {
+                // Release
+                // If it was already handled, we will ignore this interrupt
+                bool ignoreEvent = longpressAlreadyRegisteredByCheckNose;
+                // reset, so we can register new longpress events by the check mehtod
+                longpressAlreadyRegisteredByCheckNose = false;
+                if (ignoreEvent) {
+                    break;
+                }
+
                 // Fire onNoseShortpressIsr() if applicable
                 if (this->onNoseShortpressIsr != nullptr) {
                     if (this->last_touch_millis_nose + EFTOUCH_SHORTPRESS_DURATION_MS < millis()) {
                         this->onNoseShortpressIsr();
                     }
                 }
-                // Fire onFingerperintLongpressIsr() if applicable
+                // Fire onNonseLongpressIsr() if applicable
                 if (this->onNoseLongpressIsr != nullptr) {
                     if (this->last_touch_millis_nose + EFTOUCH_LONGPRESS_DURATION_MS < millis()) {
                         this->onNoseLongpressIsr();

@@ -238,6 +238,9 @@ void setup() {
  * @brief Main program loop
  */
 void loop() {
+    // The user might be holding the buttons. Calling EFTouch periodically allows it to check this and send events before release
+    EFTouch.checkForLongpressEvents();
+
     // Handler: ISR Events
     if (isrEvents.fingerprintTouch) {
         fsm.queueEvent(FSMEvent::FingerprintTouch);
