@@ -222,8 +222,8 @@ void FSM::persistGlobals() {
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     pref.putUInt("animHbSpeed", this->globals->animHeartbeatSpeed);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
-    pref.putUInt("ledBrightnessPercent", this->globals->ledBrightnessPercent);
-    LOGF_DEBUG("(FSM)  -> ledBrightnessPercent = %d\r\n", this->globals->ledBrightnessPercent);
+    pref.putUInt("ledBrightnessP", this->globals->ledBrightnessPercent);
+    LOGF_DEBUG("(FSM)  -> ledBrightnessP = %d\r\n", this->globals->ledBrightnessPercent);
     pref.end();
 }
 
@@ -244,7 +244,7 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     this->globals->animHeartbeatSpeed= pref.getUInt("animHbSpeed", 1);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
-    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightnessPercent", 40);
-    LOGF_DEBUG("(FSM)  -> ledBrightnessPercent = %d\r\n", this->globals->ledBrightnessPercent);
+    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightnessP", 40);
+    LOGF_DEBUG("(FSM)  -> ledBrightnessP = %d\r\n", this->globals->ledBrightnessPercent);
     pref.end();
 }
