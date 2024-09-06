@@ -138,10 +138,14 @@ const char *EFBoardClass::getWakeupReason() {
 }
 
 const float EFBoardClass::getBatteryVoltage() {
-    // voltageBattery = adcValue * voltPerADCStep * voltageDividerRatio
-    // adc_cal_raw_to_voltage
-    // esp_adc_cal_raw_to_voltage(analogRead(EFBOARD_PIN_VBAT));
-    return (analogRead(EFBOARD_PIN_VBAT) * (3.3 / 4095.0)) * ((51.1 + 100.0) / 100.0);
+    // R11 = 51.1k, R12 = 100k
+    constexpr float factor = 1 / (100 / (51.1 + 100.0));
+    // According to the datasheet, this should be more like 3.3. But this is off across all boards -> 3.41 seems more accurate!
+    constexpr float voltage_range = 3.41f;
+    uint16_t rawValue = analogRead(EFBOARD_PIN_VBAT);
+    float millivolts = rawValue * (voltage_range  / 4095.0f) * factor;
+    LOGF_DEBUG("Battery voltage: %f\r\n", millivolts);
+    return millivolts / 1000.0f;
 }
 
 const bool EFBoardClass::isBatteryPowered() {
@@ -162,6 +166,7 @@ const uint8_t EFBoardClass::getBatteryCapacityPercent() {
      *   - 1.20 V =  23 %
      *   - 1.16 V =   0 %
      */
+    // TODO: This is a bit outdated/off
     double vBatCell = this->getBatteryVoltage() / 3.0;
     double percent = (14.9679 * pow(vBatCell, 3) - 68.9823 * pow(vBatCell, 2) + 106.4289 * vBatCell - 54.0063) * 100.0;
     return max(min((int) round(percent), 100), 0);
