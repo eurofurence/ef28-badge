@@ -230,8 +230,10 @@ void FSM::persistGlobals() {
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
     pref.putUInt("animRainbow", this->globals->animRainbowIdx);
     LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
-    pref.putUInt("animSnake", this->globals->animSnakeIdx);
-    LOGF_DEBUG("(FSM)  -> animSnake = %d\r\n", this->globals->animSnakeIdx);
+    pref.putUInt("animSnakeIdx", this->globals->animSnakeAnimationIdx);
+    LOGF_DEBUG("(FSM)  -> animSnakeIdx = %d\r\n", this->globals->animSnakeAnimationIdx);
+    pref.putUInt("animSnakeHueIdx", this->globals->animSnakeHueIdx);
+    LOGF_DEBUG("(FSM)  -> animSnakeHueIdx = %d\r\n", this->globals->animSnakeHueIdx);
     pref.putUInt("animHbHue", this->globals->animHeartbeatHue);
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     pref.putUInt("animHbSpeed", this->globals->animHeartbeatSpeed);
@@ -254,8 +256,10 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
     this->globals->animRainbowIdx = pref.getUInt("animRainbow", 0);
     LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
-    this->globals->animSnakeIdx = pref.getUInt("animSnake", 0);
-    LOGF_DEBUG("(FSM)  -> animSnake = %d\r\n", this->globals->animSnakeIdx);
+    this->globals->animSnakeAnimationIdx = pref.getUInt("animSnakeIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animSnakeIdx = %d\r\n", this->globals->animSnakeAnimationIdx);
+    this->globals->animSnakeHueIdx = pref.getUInt("animSnakeHueIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animSnakeHueIdx = %d\r\n", this->globals->animSnakeHueIdx);
     this->globals->animHeartbeatHue = pref.getUInt("animHbHue", 0);
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     this->globals->animHeartbeatSpeed= pref.getUInt("animHbSpeed", 1);
