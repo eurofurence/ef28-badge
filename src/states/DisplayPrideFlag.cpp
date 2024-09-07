@@ -124,13 +124,30 @@ void DisplayPrideFlag::run() {
 }
 
 std::unique_ptr<FSMState> DisplayPrideFlag::touchEventFingerprintShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     return std::make_unique<MenuMain>();
 }
 
+std::unique_ptr<FSMState> DisplayPrideFlag::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
+}
+
 std::unique_ptr<FSMState> DisplayPrideFlag::touchEventFingerprintRelease() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     this->globals->prideFlagModeIdx = (this->globals->prideFlagModeIdx + 1) % 13;
     this->is_globals_dirty = true;
     this->tick = 0;
 
+    return nullptr;
+}
+
+std::unique_ptr<FSMState> DisplayPrideFlag::touchEventAllLongpress() {
+    this->toggleLock();
     return nullptr;
 }

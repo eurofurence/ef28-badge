@@ -27,6 +27,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 
+#include <EFLed.h>
 #include <EFLogging.h>
 
 #include "FSM.h"
@@ -48,8 +49,13 @@ FSM::~FSM() {
 }
 
 void FSM::resume() {
+    // Restore FSM data
     this->restoreGlobals();
+
+    // Restore LED brightness setting
+    EFLed.setBrightnessPercent(this->globals->ledBrightnessPercent);
     
+    // Resume last remembered state
     switch (this->globals->resumeStateIdx) {
         case 0: this->transition(std::make_unique<DisplayPrideFlag>()); break;
         case 1: this->transition(std::make_unique<AnimateRainbow>()); break;
@@ -189,6 +195,14 @@ void FSM::handle(unsigned int num_events) {
                 LOGF_DEBUG("(FSM) Processing Event: NoseLongpress@%s\r\n", this->state->getName());
                 next = this->state->touchEventNoseLongpress();
                 break;
+            case FSMEvent::AllShortpress:
+                LOGF_DEBUG("(FSM) Processing Event: AllShortpress@%s\r\n", this->state->getName());
+                next = this->state->touchEventAllShortpress();
+                break;
+            case FSMEvent::AllLongpress:
+                LOGF_DEBUG("(FSM) Processing Event: AllLongpress@%s\r\n", this->state->getName());
+                next = this->state->touchEventAllLongpress();
+                break;
             case FSMEvent::NoOp:
                 return;
             default:
@@ -216,12 +230,18 @@ void FSM::persistGlobals() {
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
     pref.putUInt("animRainbow", this->globals->animRainbowIdx);
     LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
-    pref.putUInt("animSnake", this->globals->animSnakeIdx);
-    LOGF_DEBUG("(FSM)  -> animSnake = %d\r\n", this->globals->animSnakeIdx);
+    pref.putUInt("animSnakeIdx", this->globals->animSnakeAnimationIdx);
+    LOGF_DEBUG("(FSM)  -> animSnakeIdx = %d\r\n", this->globals->animSnakeAnimationIdx);
+    pref.putUInt("animSnakeHueIdx", this->globals->animSnakeHueIdx);
+    LOGF_DEBUG("(FSM)  -> animSnakeHueIdx = %d\r\n", this->globals->animSnakeHueIdx);
     pref.putUInt("animHbHue", this->globals->animHeartbeatHue);
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     pref.putUInt("animHbSpeed", this->globals->animHeartbeatSpeed);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
+    pref.putUInt("animMatrixIdx", this->globals->animMatrixIdx);
+    LOGF_DEBUG("(FSM)  -> animMatrixIdx = %d\r\n", this->globals->animMatrixIdx);
+    pref.putUInt("ledBrightPcent", this->globals->ledBrightnessPercent);
+    LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
     pref.end();
 }
 
@@ -236,11 +256,17 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
     this->globals->animRainbowIdx = pref.getUInt("animRainbow", 0);
     LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
-    this->globals->animSnakeIdx = pref.getUInt("animSnake", 0);
-    LOGF_DEBUG("(FSM)  -> animSnake = %d\r\n", this->globals->animSnakeIdx);
+    this->globals->animSnakeAnimationIdx = pref.getUInt("animSnakeIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animSnakeIdx = %d\r\n", this->globals->animSnakeAnimationIdx);
+    this->globals->animSnakeHueIdx = pref.getUInt("animSnakeHueIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animSnakeHueIdx = %d\r\n", this->globals->animSnakeHueIdx);
     this->globals->animHeartbeatHue = pref.getUInt("animHbHue", 0);
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
     this->globals->animHeartbeatSpeed= pref.getUInt("animHbSpeed", 1);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
+    this->globals->animMatrixIdx= pref.getUInt("animMatrixIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animMatrixIdx = %d\r\n", this->globals->animMatrixIdx);
+    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightPcent", 40);
+    LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
     pref.end();
 }

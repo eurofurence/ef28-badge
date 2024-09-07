@@ -35,12 +35,12 @@
 #include <EFTouch.h>
 
 #include "FSM.h"
-#include "secrets.h"
+#include "FSMGlobals.h"
 #include "util.h"
 
 // Global objects and states
 constexpr unsigned int INTERVAL_BATTERY_CHECK = 10000;
-// Initializing the board with a brightness above 49 can cause stability issues!
+// Initializing the board with a brightness above 48 can cause stability issues!
 constexpr uint8_t ABSOLUTE_MAX_BRIGHTNESS = 45;
 FSM fsm(10);
 EFBoardPowerState pwrstate;
@@ -63,6 +63,8 @@ volatile struct ISREventsType {
     unsigned char noseRelease:           1;
     unsigned char noseShortpress:        1;
     unsigned char noseLongpress:         1;
+    unsigned char allShortpress:         1;
+    unsigned char allLongpress:          1;
 } isrEvents;
 
 // Interrupt service routines to update ISR struct upon triggering
@@ -74,6 +76,8 @@ void ARDUINO_ISR_ATTR isr_noseTouch()             { isrEvents.noseTouch = 1; }
 void ARDUINO_ISR_ATTR isr_noseRelease()           { isrEvents.noseRelease = 1; }
 void ARDUINO_ISR_ATTR isr_noseShortpress()        { isrEvents.noseShortpress = 1; }
 void ARDUINO_ISR_ATTR isr_noseLongpress()         { isrEvents.noseLongpress = 1; }
+void ARDUINO_ISR_ATTR isr_allShortpress()         { isrEvents.allShortpress = 1; }
+void ARDUINO_ISR_ATTR isr_allLongpress()          { isrEvents.allLongpress = 1; }
 
 /**
  * @brief Handles hard brown out events
@@ -246,6 +250,7 @@ void setup() {
     // Init board
     EFBoard.setup();
     EFLed.init(ABSOLUTE_MAX_BRIGHTNESS);
+    EFLed.setBrightnessPercent(40);  // We do not have access to the settings yet, default to 40
     boopupAnimation();
     
     // Touchy stuff
@@ -258,7 +263,9 @@ void setup() {
     EFTouch.attachInterruptOnRelease(EFTouchZone::Nose, isr_noseRelease);
     EFTouch.attachInterruptOnShortpress(EFTouchZone::Nose, isr_noseShortpress);
     EFTouch.attachInterruptOnLongpress(EFTouchZone::Nose, isr_noseLongpress);
-    
+    EFTouch.attachInterruptOnShortpress(EFTouchZone::All, isr_allShortpress);
+    EFTouch.attachInterruptOnLongpress(EFTouchZone::All, isr_allLongpress);
+
     // Get FSM going
     fsm.resume();
 }
@@ -268,6 +275,25 @@ void setup() {
  */
 void loop() {
     // Handler: ISR Events
+    if (isrEvents.allLongpress) {
+        fsm.queueEvent(FSMEvent::AllLongpress);
+        isrEvents.noseLongpress = false;
+        isrEvents.noseShortpress = false;
+        isrEvents.noseRelease = false;
+        isrEvents.fingerprintLongpress = false;
+        isrEvents.fingerprintShortpress = false;
+        isrEvents.fingerprintRelease = false;
+        isrEvents.allLongpress = false;
+        isrEvents.allShortpress = false;
+    }
+    if (isrEvents.allShortpress) {
+        fsm.queueEvent(FSMEvent::AllShortpress);
+        isrEvents.noseShortpress = false;
+        isrEvents.noseRelease = false;
+        isrEvents.fingerprintShortpress = false;
+        isrEvents.fingerprintRelease = false;
+        isrEvents.allShortpress = false;
+    }
     if (isrEvents.fingerprintTouch) {
         fsm.queueEvent(FSMEvent::FingerprintTouch);
         isrEvents.fingerprintTouch = false;

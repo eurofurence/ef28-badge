@@ -29,6 +29,17 @@
 
 #include "FSMState.h"
 
+const int hue_list[] = {
+    130,  // Start with matrix, I mean Eurofurence, green <3
+    160,
+    200,
+    240,
+    280,
+    320,
+    0,
+    40,
+    80,
+};
 
 const char* AnimateMatrix::getName() {
     return "AnimateMatrix";
@@ -47,25 +58,27 @@ void AnimateMatrix::entry() {
 }
 
 void AnimateMatrix::run() {
-    // Prepare base pattern
+    // map the 360 degree hue value to a byte
+    int mappedHue = map(hue_list[this->globals->animMatrixIdx], 0, 359, 0, 255);
+
     std::vector<CRGB> dragon = {
         CRGB::Black,
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
+        CHSV(mappedHue, 255, 40),
+        CHSV(mappedHue, 255, 110),
+        CHSV(mappedHue, 255, 255),
         CRGB::Black,
         CRGB::Black
     };
 
     std::vector<CRGB> bar = {
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
+        CHSV(mappedHue, 255, 50),
+        CHSV(mappedHue, 255, 110),
+        CHSV(mappedHue, 255, 255),
         CRGB::Black,
         CRGB::Black,
-        CHSV(95, 255, 110),
-        CHSV(95, 255, 255),
-        CHSV(95, 255, 110),
+        CHSV(mappedHue, 255, 70),
+        CHSV(mappedHue, 255, 100),
+        CHSV(mappedHue, 255, 200),
         CRGB::Black,
         CRGB::Black,
         CRGB::Black,
@@ -83,5 +96,30 @@ void AnimateMatrix::run() {
 }
 
 std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
     return std::make_unique<MenuMain>();
+}
+
+std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
+}
+
+std::unique_ptr<FSMState> AnimateMatrix::touchEventFingerprintRelease() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
+    this->globals->animMatrixIdx = (this->globals->animMatrixIdx + 1) % 9;
+    this->is_globals_dirty = true;
+    this->tick = 0;
+
+    return nullptr;
+}
+
+std::unique_ptr<FSMState> AnimateMatrix::touchEventAllLongpress() {
+    this->toggleLock();
+    return nullptr;
 }
