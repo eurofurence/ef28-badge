@@ -140,11 +140,10 @@ const char *EFBoardClass::getWakeupReason() {
 const float EFBoardClass::getBatteryVoltage() {
     // R11 = 51.1k, R12 = 100k
     constexpr float factor = 1 / (100 / (51.1 + 100.0));
-    // According to the datasheet, this should be more like 3.3. But this is off across all boards -> 3.41 seems more accurate!
-    constexpr float voltage_range = 3.41f;
+    // This is not correct over the whole range. But this is cursed anyways...
+    constexpr float voltage_input = 3.3f;
     uint16_t rawValue = analogRead(EFBOARD_PIN_VBAT);
-    float millivolts = rawValue * (voltage_range  / 4095.0f) * factor;
-    LOGF_DEBUG("Battery voltage: %f\r\n", millivolts);
+    float millivolts = rawValue * (voltage_input  / 4095.0f) * factor;
     return millivolts / 1000.0f;
 }
 
