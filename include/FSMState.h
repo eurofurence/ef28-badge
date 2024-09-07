@@ -255,6 +255,10 @@ struct AnimateSnake : public FSMState {
 
     void _animateSnake();
     void _animateKnightRider();
+
+    void _animatePulse();
+
+    void _animateRandom();
 };
 
 /**
