@@ -248,7 +248,7 @@ void FSM::persistGlobals() {
 void FSM::restoreGlobals() {
     pref.begin(this->NVS_NAMESPACE, true);
     LOGF_INFO("(FSM) Restoring FSM state data from NVS area: %s\r\n", this->NVS_NAMESPACE);
-    this->globals->resumeStateIdx = pref.getUInt("resumeStateIdx", 0);
+    this->globals->resumeStateIdx = pref.getUInt("resumeStateIdx", random(0, 3));
     LOGF_DEBUG("(FSM)  -> resumeStateIdx = %d\r\n", this->globals->resumeStateIdx);
     this->globals->menuMainPointerIdx = pref.getUInt("menuIdx", 0);
     LOGF_DEBUG("(FSM)  -> menuIdx = %d\r\n", this->globals->menuMainPointerIdx);
