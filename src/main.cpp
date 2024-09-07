@@ -39,7 +39,7 @@
 #include "util.h"
 
 // Global objects and states
-constexpr unsigned int INTERVAL_BATTERY_CHECK = 60000;
+constexpr unsigned int INTERVAL_BATTERY_CHECK = 10000;
 // Initializing the board with a brightness above 49 can cause stability issues!
 constexpr uint8_t ABSOLUTE_MAX_BRIGHTNESS = 45;
 FSM fsm(10);
@@ -146,6 +146,30 @@ void _softBrownOutHandler() {
     }
 }
 
+void batteryCheck() {
+    EFBoardPowerState previousState = pwrstate;
+    pwrstate = EFBoard.updatePowerState();
+    if (previousState != pwrstate) {
+        LOGF_DEBUG("Updated power state: %s\r\n", toString(pwrstate));
+    }
+
+    // Log battery level if battery powered
+    if (EFBoard.isBatteryPowered()) {
+        LOGF_INFO(
+            "Battery voltage: %.2f V (%d %%)\r\n",
+            EFBoard.getBatteryVoltage(),
+            EFBoard.getBatteryCapacityPercent()
+        );
+    }
+
+    // Handle brown out
+    if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
+        _hardBrownOutHandler();
+    } else if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
+        _softBrownOutHandler();
+    }
+}
+
 /**
  * @brief Calculates a wave animation. Used by bootupAnimation()
  */
@@ -160,7 +184,7 @@ float wave_function(float x, float start, float end, float amplitude) {
 /**
  * @brief Displays a fancy bootup animation
  */
-void bootupAnimation() {
+void boopupAnimation() {
     CRGB data[EFLED_TOTAL_NUM];
     fill_solid(data, EFLED_TOTAL_NUM, CRGB::Black);
     EFLed.setAll(data);
@@ -173,6 +197,10 @@ void bootupAnimation() {
 
     for (uint16_t n = 0; n < 30; n++) {
         uint16_t n_scaled = n * 7;
+        if (n % 10) {
+            // Low batteries might crash the boopup animation
+            batteryCheck();
+        }
         for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
             int16_t dx = EFLedClass::getLEDPosition(i).x - pwrX;
             int16_t dy = EFLedClass::getLEDPosition(i).y - pwrY;
@@ -191,6 +219,7 @@ void bootupAnimation() {
     EFLed.clear();
     delay(400);
 
+    batteryCheck();
     // dragon awakens ;-)
     EFLed.setDragonEye(CRGB(10,0, 0));
     delay(60);
@@ -217,7 +246,7 @@ void setup() {
     // Init board
     EFBoard.setup();
     EFLed.init(ABSOLUTE_MAX_BRIGHTNESS);
-    bootupAnimation();
+    boopupAnimation();
     
     // Touchy stuff
     EFTouch.init();
@@ -287,28 +316,7 @@ void loop() {
 
     // Task: Battery checks
     if (task_battery < millis()) {
-        EFBoardPowerState previousState = pwrstate;
-        pwrstate = EFBoard.updatePowerState();
-        if (previousState != pwrstate) {
-            LOGF_DEBUG("Updated power state: %s\r\n", toString(pwrstate));
-        }
-
-        // Log battery level if battery powered
-        if (EFBoard.isBatteryPowered()) {
-            LOGF_INFO(
-                "Battery voltage: %.2f V (%d %%)\r\n",
-                EFBoard.getBatteryVoltage(),
-                EFBoard.getBatteryCapacityPercent()
-            );
-        }
-        
-        // Handle brown out
-        if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
-            _hardBrownOutHandler();
-        } else if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
-            _softBrownOutHandler();
-        }
-
+        batteryCheck();
         task_battery = millis() + INTERVAL_BATTERY_CHECK;
     }
 }
