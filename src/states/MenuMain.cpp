@@ -32,7 +32,7 @@
 /**
  * @brief Number of registered menu items
  */
-#define MENUMAIN_NUM_MENU_ITEMS 6
+#define MENUMAIN_NUM_MENU_ITEMS 5
 
 CRGB menuColors[11] = {
     CRGB(40,10,10),
@@ -89,7 +89,7 @@ std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
         case 2: return std::make_unique<AnimateMatrix>();
         case 3: return std::make_unique<AnimateSnake>();
         case 4: return std::make_unique<AnimateHeartbeat>();
-        case 5: return std::make_unique<OTAUpdate>();
+//        case 5: return std::make_unique<OTAUpdate>(); // OTA Update not in production firmware
         default: return nullptr;
     }
 }
