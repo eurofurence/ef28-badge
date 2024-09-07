@@ -40,7 +40,7 @@
 
 // Global objects and states
 constexpr unsigned int INTERVAL_BATTERY_CHECK = 60000;
-// Initalizing the board with a brightness above 49 can cause stability issues!
+// Initializing the board with a brightness above 49 can cause stability issues!
 constexpr uint8_t ABSOLUTE_MAX_BRIGHTNESS = 45;
 FSM fsm(10);
 EFBoardPowerState pwrstate;
@@ -86,7 +86,7 @@ void _hardBrownOutHandler() {
     );
     EFBoard.disableWifi();
     // Try getting the LEDs into some known state
-    EFLed.setBrightnessPercent(20);
+    EFLed.setBrightnessPercent(30);
     EFLed.clear();
     EFLed.setDragonNose(CRGB::Red);
 
@@ -95,10 +95,10 @@ void _hardBrownOutHandler() {
         // Low brightness blink every few seconds
         EFLed.enablePower();
         EFLed.setDragonNose(CRGB::Red);
-        esp_sleep_enable_timer_wakeup(80 * 1000);  // in ms
+        esp_sleep_enable_timer_wakeup(100 * 1000);  // 100 ms
         EFLed.disablePower();
         // sleep most of the time.
-        esp_sleep_enable_timer_wakeup(4 * 1000000);
+        esp_sleep_enable_timer_wakeup(2 * 1000 * 1000);  // 2s
         esp_light_sleep_start();
         // TODO: Go to deep sleep, but save the reason so when waking up, we can blink and deep sleep again
     }
@@ -287,8 +287,11 @@ void loop() {
 
     // Task: Battery checks
     if (task_battery < millis()) {
+        EFBoardPowerState previousState = pwrstate;
         pwrstate = EFBoard.updatePowerState();
-        LOGF_DEBUG("Updated power state: %s\r\n", toString(pwrstate));
+        if (previousState != pwrstate) {
+            LOGF_DEBUG("Updated power state: %s\r\n", toString(pwrstate));
+        }
 
         // Log battery level if battery powered
         if (EFBoard.isBatteryPowered()) {

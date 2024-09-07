@@ -33,7 +33,6 @@
 
 #include "EFBoard.h"
 
-
 RTC_DATA_ATTR uint32_t bootCount = 0;
 
 volatile int8_t ota_last_progress = -1;
@@ -74,6 +73,7 @@ void EFBoardClass::setup() {
     randomSeed(analogRead(0));
 
     // Check power state
+    this->updatePowerState();
     const EFBoardPowerState pwrstate = this->getPowerState();
     if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
         LOGF_ERROR("(EFBoard) HARD BROWN OUT DETECTED (V_BAT = %.2f V). Panic!\r\n", this->getBatteryVoltage());
@@ -155,7 +155,7 @@ const bool EFBoardClass::isBatteryPowered() {
 const uint8_t EFBoardClass::getBatteryCapacityPercent() {
     /* Used Varta Longlife AA cells discharge curve as a base.
      *
-     * We consider 1.16 V as empty even though the cells are not empty at that
+     * We consider 1.12 V as empty even though the cells are not empty at that
      * point due to the brown out voltage of the DC/DC for the 3.3V rail.
      *
      * Data points used to fit cubic function to:
@@ -178,19 +178,18 @@ const EFBoardPowerState EFBoardClass::updatePowerState() {
     } else {
         float vbat = this->getBatteryVoltage();
 
-        // if (vbat <= EFBOARD_BROWN_OUT_SOFT) {
-        //     // A low-battery state could be a momentary spike that we can handle and do not need to shut off
-        //     // We take the highest of three measurements to make sure
-        //     delay(10);
-        //     float newVbat = this->getBatteryVoltage();
-        //     vbat = newVbat > vbat ? newVbat : vbat;
-        //     delay(10);
-        //     newVbat = this->getBatteryVoltage();
-        //     vbat = newVbat > vbat ? newVbat : vbat;
-        //     delay(10);
-        //     newVbat = this->getBatteryVoltage();
-        //     vbat = newVbat > vbat ? newVbat : vbat;
-        // }
+        if (vbat <= EFBOARD_BROWN_OUT_SOFT) {
+            // A low-battery state could be a momentary spike
+            // We take multiple samples to make sure we are really low on battery
+            float sum = 0.0f;
+            constexpr uint8_t samples = 5;
+            for (uint8_t i = 0; i < samples; i++) {
+                sum += this->getBatteryVoltage();
+                delay(1);
+            }
+            vbat = sum / samples;
+            LOGF("BATTERY: Measurement average: %f\r\n", vbat);
+        }
 
         if (vbat <= EFBOARD_BROWN_OUT_HARD || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
             this->power_state = EFBoardPowerState::BAT_BROWN_OUT_HARD;

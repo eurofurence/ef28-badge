@@ -39,10 +39,10 @@
 #define EFBOARD_ADC_CHANNEL ADC1_CHANNEL_9 //!< ESP32 ADC1 Channel
 #define EFBOARD_NUM_BATTERIES 3            //!< Number of battery cells used for V_BAT
 #define EFBOARD_VBAT_MAX (1.60 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered full
-#define EFBOARD_VBAT_MIN (1.12 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
+#define EFBOARD_VBAT_MIN (1.13 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
 
 #define EFBOARD_BROWN_OUT_SOFT EFBOARD_VBAT_MIN //!< V_BAT threshold after which a soft brown out is triggered
-#define EFBOARD_BROWN_OUT_HARD 3.30             //!< V_BAT threshold after which a hard brown out is triggered
+#define EFBOARD_BROWN_OUT_HARD (EFBOARD_BROWN_OUT_SOFT - 0.08) //!< V_BAT threshold after which a hard brown out is triggered
 
 
 /**
