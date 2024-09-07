@@ -137,14 +137,21 @@ const char *EFBoardClass::getWakeupReason() {
     }
 }
 
+// TODO: This version has some bug...
+//const float EFBoardClass::getBatteryVoltage() {
+//    // R11 = 51.1k, R12 = 100k
+//    constexpr float factor = 1 / (100 / (51.1 + 100.0));
+//    // This is not correct over the whole range. But this is cursed anyways...
+//    constexpr float voltage_input = 3.3f;
+//    uint16_t rawValue = analogRead(EFBOARD_PIN_VBAT);
+//    float millivolts = rawValue * (voltage_input  / 4095.0f) * factor;
+//    return millivolts / 1000.0f;
+//}
+
 const float EFBoardClass::getBatteryVoltage() {
-    // R11 = 51.1k, R12 = 100k
-    constexpr float factor = 1 / (100 / (51.1 + 100.0));
-    // This is not correct over the whole range. But this is cursed anyways...
-    constexpr float voltage_input = 3.3f;
-    uint16_t rawValue = analogRead(EFBOARD_PIN_VBAT);
-    float millivolts = rawValue * (voltage_input  / 4095.0f) * factor;
-    return millivolts / 1000.0f;
+    // voltageBattery = adcValue * voltPerADCStep * voltageDividerRatio
+    // 3.5 should be 3.3. But then it measures wrong. With 3.5 it it measures brownout around 3.37V
+    return (analogRead(EFBOARD_PIN_VBAT) * (3.5 / 4095.0)) * ((51.1 + 100.0) / 100.0);
 }
 
 const bool EFBoardClass::isBatteryPowered() {
