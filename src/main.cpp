@@ -39,7 +39,7 @@
 #include "util.h"
 
 // Global objects and states
-constexpr unsigned int INTERVAL_BATTERY_CHECK = 60000;
+constexpr unsigned int INTERVAL_BATTERY_CHECK = 10000;
 // Initializing the board with a brightness above 48 can cause stability issues!
 constexpr uint8_t ABSOLUTE_MAX_BRIGHTNESS = 45;
 FSM fsm(10);
@@ -90,7 +90,7 @@ void _hardBrownOutHandler() {
     );
     EFBoard.disableWifi();
     // Try getting the LEDs into some known state
-    EFLed.setBrightnessPercent(20);
+    EFLed.setBrightnessPercent(30);
     EFLed.clear();
     EFLed.setDragonNose(CRGB::Red);
 
@@ -99,10 +99,10 @@ void _hardBrownOutHandler() {
         // Low brightness blink every few seconds
         EFLed.enablePower();
         EFLed.setDragonNose(CRGB::Red);
-        esp_sleep_enable_timer_wakeup(80 * 1000);  // in ms
+        esp_sleep_enable_timer_wakeup(100 * 1000);  // 100 ms
         EFLed.disablePower();
         // sleep most of the time.
-        esp_sleep_enable_timer_wakeup(4 * 1000000);
+        esp_sleep_enable_timer_wakeup(2 * 1000 * 1000);  // 2s
         esp_light_sleep_start();
         // TODO: Go to deep sleep, but save the reason so when waking up, we can blink and deep sleep again
     }
@@ -150,6 +150,30 @@ void _softBrownOutHandler() {
     }
 }
 
+void batteryCheck() {
+    EFBoardPowerState previousState = pwrstate;
+    pwrstate = EFBoard.updatePowerState();
+    if (previousState != pwrstate) {
+        LOGF_DEBUG("Updated power state: %s\r\n", toString(pwrstate));
+    }
+
+    // Log battery level if battery powered
+    if (EFBoard.isBatteryPowered()) {
+        LOGF_INFO(
+            "Battery voltage: %.2f V (%d %%)\r\n",
+            EFBoard.getBatteryVoltage(),
+            EFBoard.getBatteryCapacityPercent()
+        );
+    }
+
+    // Handle brown out
+    if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
+        _hardBrownOutHandler();
+    } else if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
+        _softBrownOutHandler();
+    }
+}
+
 /**
  * @brief Calculates a wave animation. Used by bootupAnimation()
  */
@@ -164,7 +188,7 @@ float wave_function(float x, float start, float end, float amplitude) {
 /**
  * @brief Displays a fancy bootup animation
  */
-void bootupAnimation() {
+void boopupAnimation() {
     CRGB data[EFLED_TOTAL_NUM];
     fill_solid(data, EFLED_TOTAL_NUM, CRGB::Black);
     EFLed.setAll(data);
@@ -177,6 +201,10 @@ void bootupAnimation() {
 
     for (uint16_t n = 0; n < 30; n++) {
         uint16_t n_scaled = n * 7;
+        if (n % 10) {
+            // Low batteries might crash the boopup animation
+            batteryCheck();
+        }
         for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
             int16_t dx = EFLedClass::getLEDPosition(i).x - pwrX;
             int16_t dy = EFLedClass::getLEDPosition(i).y - pwrY;
@@ -195,6 +223,7 @@ void bootupAnimation() {
     EFLed.clear();
     delay(400);
 
+    batteryCheck();
     // dragon awakens ;-)
     EFLed.setDragonEye(CRGB(10,0, 0));
     delay(60);
@@ -222,7 +251,7 @@ void setup() {
     EFBoard.setup();
     EFLed.init(ABSOLUTE_MAX_BRIGHTNESS);
     EFLed.setBrightnessPercent(40);  // We do not have access to the settings yet, default to 40
-    bootupAnimation();
+    boopupAnimation();
     
     // Touchy stuff
     EFTouch.init();
@@ -236,7 +265,7 @@ void setup() {
     EFTouch.attachInterruptOnLongpress(EFTouchZone::Nose, isr_noseLongpress);
     EFTouch.attachInterruptOnShortpress(EFTouchZone::All, isr_allShortpress);
     EFTouch.attachInterruptOnLongpress(EFTouchZone::All, isr_allLongpress);
-    
+
     // Get FSM going
     fsm.resume();
 }
@@ -313,25 +342,7 @@ void loop() {
 
     // Task: Battery checks
     if (task_battery < millis()) {
-        pwrstate = EFBoard.updatePowerState();
-        LOGF_DEBUG("Updated power state: %s\r\n", toString(pwrstate));
-
-        // Log battery level if battery powered
-        if (EFBoard.isBatteryPowered()) {
-            LOGF_INFO(
-                "Battery voltage: %.2f V (%d %%)\r\n",
-                EFBoard.getBatteryVoltage(),
-                EFBoard.getBatteryCapacityPercent()
-            );
-        }
-        
-        // Handle brown out
-        if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
-            _hardBrownOutHandler();
-        } else if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
-            _softBrownOutHandler();
-        }
-
+        batteryCheck();
         task_battery = millis() + INTERVAL_BATTERY_CHECK;
     }
 }
