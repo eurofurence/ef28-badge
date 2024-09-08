@@ -9,10 +9,10 @@ while true; do
   echo ""
   echo "# Waiting for new device on ${PORT}…"
   while [ ! -e "${PORT}" ]; do
-    sleep 0.5
+    sleep 0.08
   done
   echo "# Found new device!"
-  sleep 1
+  sleep 0.4
 
   echo "" | tee -a ${OUTFILE}
   echo -n "========== " | tee -a ${OUTFILE}
