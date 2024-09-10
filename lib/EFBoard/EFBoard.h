@@ -34,13 +34,13 @@
 #define EFBOARD_SERIAL_BAUD 115200         //!< Baudrate for the serial device
 
 // The Step-Down converter still manages to hold 3.00V with 3,32V input. The ESP needs 3.0V at least
-#define EFBOARD_PIN_VBAT 10                //!< Pin the analog voltage divider for V_BAT is connected to
+#define EFBOARD_PIN_VBAT 10                //!< Pin the analog voltage divider for V_BAT is connected to (ADC1_CH9)
 #define EFBOARD_NUM_BATTERIES 3            //!< Number of battery cells used for V_BAT
 #define EFBOARD_VBAT_MAX (1.60 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered full
-#define EFBOARD_VBAT_MIN (1.12 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
+#define EFBOARD_VBAT_MIN (1.13 * EFBOARD_NUM_BATTERIES) //!< Voltage at which battery cells are considered empty
 
 #define EFBOARD_BROWN_OUT_SOFT EFBOARD_VBAT_MIN //!< V_BAT threshold after which a soft brown out is triggered
-#define EFBOARD_BROWN_OUT_HARD 3.30             //!< V_BAT threshold after which a hard brown out is triggered
+#define EFBOARD_BROWN_OUT_HARD (EFBOARD_BROWN_OUT_SOFT - 0.08) //!< V_BAT threshold after which a hard brown out is triggered
 
 
 /**

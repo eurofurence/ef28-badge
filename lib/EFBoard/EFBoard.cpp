@@ -33,7 +33,6 @@
 
 #include "EFBoard.h"
 
-
 RTC_DATA_ATTR uint32_t bootCount = 0;
 
 volatile int8_t ota_last_progress = -1;
@@ -74,6 +73,7 @@ void EFBoardClass::setup() {
     randomSeed(analogRead(0));
 
     // Check power state
+    this->updatePowerState();
     const EFBoardPowerState pwrstate = this->getPowerState();
     if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
         LOGF_ERROR("(EFBoard) HARD BROWN OUT DETECTED (V_BAT = %.2f V). Panic!\r\n", this->getBatteryVoltage());
@@ -138,8 +138,15 @@ const char *EFBoardClass::getWakeupReason() {
 }
 
 const float EFBoardClass::getBatteryVoltage() {
-    // voltageBattery = adcValue * voltPerADCStep * voltageDividerRatio
-    return (analogRead(EFBOARD_PIN_VBAT) * (3.3 / 4095.0)) * ((51.1 + 100.0) / 100.0);
+    // Voltage divider resistors: R11 = 51.1k, R12 = 100k
+    constexpr float R1 = 51.1f;
+    constexpr float R2 = 100.0f;
+    constexpr float ADC_MAX_VALUE = 4095.0f;
+    constexpr float ADC_REF_VOLTAGE = 3.5f; // Reference voltage for ADC. Should be 3.3V, but the results are wonky. 3.5 works better
+
+    constexpr float voltage_divider_factor = (R1 + R2) / R2;
+    float battery_voltage = (analogRead(EFBOARD_PIN_VBAT) * (ADC_REF_VOLTAGE / ADC_MAX_VALUE)) * voltage_divider_factor;
+    return battery_voltage;
 }
 
 const bool EFBoardClass::isBatteryPowered() {
@@ -149,7 +156,7 @@ const bool EFBoardClass::isBatteryPowered() {
 const uint8_t EFBoardClass::getBatteryCapacityPercent() {
     /* Used Varta Longlife AA cells discharge curve as a base.
      *
-     * We consider 1.16 V as empty even though the cells are not empty at that
+     * We consider 1.12 V as empty even though the cells are not empty at that
      * point due to the brown out voltage of the DC/DC for the 3.3V rail.
      *
      * Data points used to fit cubic function to:
@@ -160,6 +167,7 @@ const uint8_t EFBoardClass::getBatteryCapacityPercent() {
      *   - 1.20 V =  23 %
      *   - 1.16 V =   0 %
      */
+    // TODO: This is a bit outdated/off
     double vBatCell = this->getBatteryVoltage() / 3.0;
     double percent = (14.9679 * pow(vBatCell, 3) - 68.9823 * pow(vBatCell, 2) + 106.4289 * vBatCell - 54.0063) * 100.0;
     return max(min((int) round(percent), 100), 0);
@@ -169,7 +177,21 @@ const EFBoardPowerState EFBoardClass::updatePowerState() {
     if (!this->isBatteryPowered()) {
         this->power_state = EFBoardPowerState::USB;
     } else {
-        const float vbat = this->getBatteryVoltage();
+        float vbat = this->getBatteryVoltage();
+
+        if (vbat <= EFBOARD_BROWN_OUT_SOFT) {
+            // A low-battery state could be a momentary spike
+            // We take multiple samples to make sure we are really low on battery
+            float sum = 0.0f;
+            constexpr uint8_t samples = 5;
+            for (uint8_t i = 0; i < samples; i++) {
+                sum += this->getBatteryVoltage();
+                delay(1);
+            }
+            vbat = sum / samples;
+            LOGF("BATTERY: Measurement average: %f\r\n", vbat);
+        }
+
         if (vbat <= EFBOARD_BROWN_OUT_HARD || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
             this->power_state = EFBoardPowerState::BAT_BROWN_OUT_HARD;
         } else if (vbat <= EFBOARD_BROWN_OUT_SOFT || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
