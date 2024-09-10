@@ -137,21 +137,16 @@ const char *EFBoardClass::getWakeupReason() {
     }
 }
 
-// TODO: This version has some bug...
-//const float EFBoardClass::getBatteryVoltage() {
-//    // R11 = 51.1k, R12 = 100k
-//    constexpr float factor = 1 / (100 / (51.1 + 100.0));
-//    // This is not correct over the whole range. But this is cursed anyways...
-//    constexpr float voltage_input = 3.3f;
-//    uint16_t rawValue = analogRead(EFBOARD_PIN_VBAT);
-//    float millivolts = rawValue * (voltage_input  / 4095.0f) * factor;
-//    return millivolts / 1000.0f;
-//}
-
 const float EFBoardClass::getBatteryVoltage() {
-    // voltageBattery = adcValue * voltPerADCStep * voltageDividerRatio
-    // 3.5 should be 3.3. But then it measures wrong. With 3.5 it it measures brownout around 3.37V
-    return (analogRead(EFBOARD_PIN_VBAT) * (3.5 / 4095.0)) * ((51.1 + 100.0) / 100.0);
+    // Voltage divider resistors: R11 = 51.1k, R12 = 100k
+    constexpr float R1 = 51.1f;
+    constexpr float R2 = 100.0f;
+    constexpr float ADC_MAX_VALUE = 4095.0f;
+    constexpr float ADC_REF_VOLTAGE = 3.5f; // Reference voltage for ADC. Should be 3.3V, but the results are wonky. 3.5 works better
+
+    constexpr float voltage_divider_factor = (R1 + R2) / R2;
+    float battery_voltage = (analogRead(EFBOARD_PIN_VBAT) * (ADC_REF_VOLTAGE / ADC_MAX_VALUE)) * voltage_divider_factor;
+    return battery_voltage;
 }
 
 const bool EFBoardClass::isBatteryPowered() {
