@@ -1,5 +1,5 @@
 # EF28 Cyber LED Badge
 
-## TBD (TBD)
+## v2024.09.07
 
 * Initial release

@@ -29,7 +29,7 @@
 
 #include "EFBoardPowerState.h"
 
-#define EFBOARD_FIRMWARE_VERSION "v1.1.0"
+#define EFBOARD_FIRMWARE_VERSION "v2024.09.07"
 #define EFBOARD_SERIAL_DEVICE USBSerial    //!< Serial device to use for logging
 #define EFBOARD_SERIAL_BAUD 115200         //!< Baudrate for the serial device
 
