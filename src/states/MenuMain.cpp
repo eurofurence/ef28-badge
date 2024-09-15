@@ -32,11 +32,10 @@
 /**
  * @brief Number of registered menu items
  */
-#define MENUMAIN_NUM_MENU_ITEMS 5
+#define MENUMAIN_NUM_MENU_ITEMS 8
 
 CRGB menuColors[11] = {
     CRGB(40,10,10),
-    CRGB(10, 40,10),
     CRGB(10,10, 40),
     CRGB(40, 40,10),
     CRGB(40,10, 40),
@@ -45,7 +44,7 @@ CRGB menuColors[11] = {
     CRGB(40, 20, 20),
     CRGB(20, 40, 20),
     CRGB(40, 40, 20),
-    CRGB(20, 40, 40)
+    CRGB(20, 40, 40) //TODO, why is there only 10 here? (array sized 11)
 };
 
 const char *MenuMain::getName() {
@@ -90,6 +89,8 @@ std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
         case 3: return std::make_unique<AnimateSnake>();
         case 4: return std::make_unique<AnimateHeartbeat>();
 //        case 5: return std::make_unique<OTAUpdate>(); // OTA Update not in production firmware
+		case 6: return std::make_unique<GameHuemesh>(); //Game :3
+		case 7: return std::make_unique<VUMeter>(); //VUMeter :3
         default: return nullptr;
     }
 }

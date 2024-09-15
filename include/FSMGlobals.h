@@ -48,6 +48,8 @@ typedef struct {
     uint8_t animHeartbeatHue = 0;   //!< AnimateHeartbeat: Hue selector
     uint8_t animHeartbeatSpeed = 1; //!< AnimateHeartbeat: Speed selector
     uint8_t animMatrixIdx = 0;      //!< AnimateMatrix: Color selector
+	
+	uint8_t huemeshOwnHue = 0;	//!< GameHuemesh: Own hue smelector
 
 } FSMGlobals;
 
