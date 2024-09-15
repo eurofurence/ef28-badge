@@ -23,7 +23,8 @@
 /**
  * @author Honigeintopf
  */
-
+ 
+#include <Arduino.h>
 #include <util.h>
 
 const char* toString(EFBoardPowerState state) {
@@ -44,3 +45,15 @@ const char* toString(EFTouchZone zone) {
         default: return "INVALID";
     }
 }
+
+/**
+ * @brief Calculates a wave animation. Used by bootupAnimation()
+ */
+const float wave_function(float x, float start, float end, float amplitude) {
+    if (x < start || x > end) {
+        return 0;
+    }
+    double normalized_x = (x - start) / (end - start) * M_PI;
+    return amplitude * std::sin(normalized_x);
+}
+
