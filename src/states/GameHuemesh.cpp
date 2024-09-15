@@ -67,6 +67,28 @@ uint8_t edit_happen = 0;
 
 uint8_t mesh_status = 0;
 
+void update_bar_to_reflect_consensus(){
+	int total_sum = 0;
+	for (int i = 0; i < NUM_HUES; i++) {
+		total_sum += hue_consensus[i];
+	}
+
+	int ledIndex = 0;
+	for (int i = 0; i < NUM_HUES; i++) {
+		int num_leds_for_color = (int)(((float)hue_consensus[i]*11)/total_sum);
+		
+		for (int j = 0; j < num_leds_for_color && ledIndex < 11; j++) {
+			bar[ledIndex] = CHSV(rainbow[i], 255, 255);
+			ledIndex++;
+		}
+	}
+	
+	while (ledIndex < 11) {
+		bar[ledIndex] = CHSV(0,0,0);
+		ledIndex++;
+	}
+}
+
 void incomingDataCallback(uint32_t from, String &msg) {
 
 	const char* base64Encoded = msg.c_str();
@@ -81,13 +103,15 @@ void incomingDataCallback(uint32_t from, String &msg) {
 	size_t outputLength = 0;
 	if (mbedtls_base64_decode(decodedArray, decodedLength, &outputLength, (const uint8_t*)base64Encoded, base64EncodedLength) == 0) {
 		for (size_t i = 0; i < NUM_HUES; i++) {
-			hue_consensus[i] = hue_consensus[i] * (HUE_WEIGHT) + decodedArray[i] * (1-HUE_WEIGHT);
+			hue_consensus[i] = (int)(hue_consensus[i] * (float)(HUE_WEIGHT) + decodedArray[i] * (float)(1-HUE_WEIGHT));
 		}
 	} else {
 		Serial.println("Base64 decoding failed.");
 	}
 
 	refresh_happen = 0;
+	
+	update_bar_to_reflect_consensus();
 
 }
 
@@ -98,27 +122,6 @@ void changedConnectionCallback() {}
 void nodeTimeAdjustedCallback(int32_t offset) {}
 
 void gameLoop() {
-
-	int total_sum = 0;
-	for (int i = 0; i < NUM_HUES; i++) {
-		total_sum += hue_consensus[i];
-	}
-
-	int ledIndex = 0;
-	for (int i = 0; i < NUM_HUES; i++) {
-		int num_leds_for_color = (hue_consensus[i]*11.0f)/total_sum;
-
-		// Fill the bar with the corresponding number of LEDs for this color
-		for (int j = 0; j < num_leds_for_color && ledIndex < 11; j++) {
-			bar[ledIndex] = CHSV(rainbow[i], 255, 255);
-			ledIndex++;
-		}
-	}
-	// Fill any remaining LEDs (if rounding left gaps)
-	while (ledIndex < 11) {
-		bar[ledIndex] = CHSV(rainbow[10], 255, 255); // Fill with the last color
-		ledIndex++;
-	}
 	
 	//Copy and sort hues
 	//memcpy(hues_sorted, hues, sizeof(hues));
@@ -155,11 +158,12 @@ bool GameHuemesh::shouldBeRemembered() {
 
 void GameHuemesh::entry() {
 	this->tick = 0;
+	own_hue = this->globals->huemeshOwnHue;
 
 	EFLed.clear();
 
 	for (int i = 0; i < NUM_HUES; i++) {
-		hue_consensus[i] = 1;
+		hue_consensus[i] = 22;
 	}
 
 	//We don't need all the power. We are eco friendly! <~<;
@@ -263,12 +267,14 @@ std::unique_ptr<FSMState> GameHuemesh::touchEventNoseLongpress() {
 std::unique_ptr<FSMState> GameHuemesh::touchEventNoseRelease() {
 	//Subtract 1 from all others
 	for(int i=0; i < NUM_HUES; i++){
-		if(hue_consensus[i] > 0 && i != own_hue) hue_consensus[i]--;
+		if(hue_consensus[i] > 1 && i != own_hue) hue_consensus[i]--;
 	}
 	//Increment own color
-	if(hue_consensus[own_hue] < 32){
+	if(hue_consensus[own_hue] < 254){
 		hue_consensus[own_hue]++;
 	}
+	
+	update_bar_to_reflect_consensus();
 	
 	edit_happen = 0;
 	return nullptr;
