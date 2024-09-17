@@ -25,10 +25,14 @@
  */
 
 #include <Arduino.h>
+#include <Preferences.h>
 
+#include <EFLed.h>
 #include <EFLogging.h>
 
 #include "FSM.h"
+
+Preferences pref;
 
 FSM::FSM(unsigned int tickrate_ms)
 : state(nullptr)
@@ -38,11 +42,58 @@ FSM::FSM(unsigned int tickrate_ms)
     this->globals = std::make_shared<FSMGlobals>();
     this->state = std::make_unique<DisplayPrideFlag>();
     this->state->attachGlobals(this->globals);
-    this->state->entry();
 }
 
 FSM::~FSM() {
     this->state->exit();
+}
+
+void FSM::resume() {
+    // Restore FSM data
+    this->restoreGlobals();
+
+    // Restore LED brightness setting
+    EFLed.setBrightnessPercent(this->globals->ledBrightnessPercent);
+    
+    // Resume last remembered state
+    switch (this->globals->resumeStateIdx) {
+        case 0: this->transition(std::make_unique<DisplayPrideFlag>()); break;
+        case 1: this->transition(std::make_unique<AnimateRainbow>()); break;
+        case 2: this->transition(std::make_unique<AnimateMatrix>()); break;
+        case 3: this->transition(std::make_unique<AnimateSnake>()); break;
+        case 4: this->transition(std::make_unique<AnimateHeartbeat>()); break;
+        default:
+            LOGF_WARNING("(FSM) Failed to resume to unknown state: %d\r\n", this->globals->resumeStateIdx);
+            this->transition(std::make_unique<DisplayPrideFlag>());
+            break;
+
+    }
+}
+
+void FSM::transition(std::unique_ptr<FSMState> next) {
+    if (next == nullptr) {
+        LOG_WARNING("(FSM) Failed to transition to null state. Aborting.");
+        return;
+    }
+
+    // State exit
+    LOGF_INFO("(FSM) Transition %s -> %s\r\n", this->state->getName(), next->getName());
+    this->state->exit();
+
+    // Persist globals if state dirtied it or next state wants to be persisted
+    if (next->shouldBeRemembered()) {
+        this->globals->resumeStateIdx = this->globals->menuMainPointerIdx;
+    }
+    if (this->state->isGlobalsDirty() || next->shouldBeRemembered()) {
+        this->persistGlobals();
+        this->state->resetGlobalsDirty();
+    }
+
+    // Transition to next state
+    this->state = std::move(next);
+    this->state->attachGlobals(this->globals);
+    this->state_last_run = 0;
+    this->state->entry();
 }
 
 unsigned int FSM::getTickRateMs() {
@@ -90,6 +141,12 @@ void FSM::handle() {
 }
 
 void FSM::handle(unsigned int num_events) {
+    // Handle dirtied FSM globals
+    if (this->state->isGlobalsDirty()) {
+        this->persistGlobals();
+        this->state->resetGlobalsDirty();
+    }
+
     // Handle state run()
     if (
         this->state->getTickRateMs() == 0 ||
@@ -138,6 +195,14 @@ void FSM::handle(unsigned int num_events) {
                 LOGF_DEBUG("(FSM) Processing Event: NoseLongpress@%s\r\n", this->state->getName());
                 next = this->state->touchEventNoseLongpress();
                 break;
+            case FSMEvent::AllShortpress:
+                LOGF_DEBUG("(FSM) Processing Event: AllShortpress@%s\r\n", this->state->getName());
+                next = this->state->touchEventAllShortpress();
+                break;
+            case FSMEvent::AllLongpress:
+                LOGF_DEBUG("(FSM) Processing Event: AllLongpress@%s\r\n", this->state->getName());
+                next = this->state->touchEventAllLongpress();
+                break;
             case FSMEvent::NoOp:
                 return;
             default:
@@ -147,12 +212,61 @@ void FSM::handle(unsigned int num_events) {
 
         // Handle state transition
         if (next != nullptr) {
-            LOGF_INFO("(FSM) Transition %s -> %s\r\n", this->state->getName(), next->getName());
-            this->state->exit();
-            this->state = std::move(next);
-            this->state->attachGlobals(this->globals);
-            this->state_last_run = 0;
-            this->state->entry();
+            this->transition(move(next));
         }
     }
+}
+
+void FSM::persistGlobals() {
+    pref.begin(this->NVS_NAMESPACE, false);
+    LOGF_INFO("(FSM) Persisting FSM state data to NVS area: %s\r\n", this->NVS_NAMESPACE);
+    pref.clear();
+    LOG_DEBUG("(FSM)  -> Clear storage area");
+    pref.putUInt("resumeStateIdx", this->globals->resumeStateIdx);
+    LOGF_DEBUG("(FSM)  -> resumeStateIdx = %d\r\n", this->globals->resumeStateIdx);
+    pref.putUInt("menuIdx", this->globals->menuMainPointerIdx);
+    LOGF_DEBUG("(FSM)  -> menuIdx = %d\r\n", this->globals->menuMainPointerIdx);
+    pref.putUInt("prideFlagMode", this->globals->prideFlagModeIdx);
+    LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
+    pref.putUInt("animRainbow", this->globals->animRainbowIdx);
+    LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
+    pref.putUInt("animSnakeIdx", this->globals->animSnakeAnimationIdx);
+    LOGF_DEBUG("(FSM)  -> animSnakeIdx = %d\r\n", this->globals->animSnakeAnimationIdx);
+    pref.putUInt("animSnakeHueIdx", this->globals->animSnakeHueIdx);
+    LOGF_DEBUG("(FSM)  -> animSnakeHueIdx = %d\r\n", this->globals->animSnakeHueIdx);
+    pref.putUInt("animHbHue", this->globals->animHeartbeatHue);
+    LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
+    pref.putUInt("animHbSpeed", this->globals->animHeartbeatSpeed);
+    LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
+    pref.putUInt("animMatrixIdx", this->globals->animMatrixIdx);
+    LOGF_DEBUG("(FSM)  -> animMatrixIdx = %d\r\n", this->globals->animMatrixIdx);
+    pref.putUInt("ledBrightPcent", this->globals->ledBrightnessPercent);
+    LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
+    pref.end();
+}
+
+void FSM::restoreGlobals() {
+    pref.begin(this->NVS_NAMESPACE, true);
+    LOGF_INFO("(FSM) Restoring FSM state data from NVS area: %s\r\n", this->NVS_NAMESPACE);
+    this->globals->resumeStateIdx = pref.getUInt("resumeStateIdx", random(0, 3));
+    LOGF_DEBUG("(FSM)  -> resumeStateIdx = %d\r\n", this->globals->resumeStateIdx);
+    this->globals->menuMainPointerIdx = pref.getUInt("menuIdx", 0);
+    LOGF_DEBUG("(FSM)  -> menuIdx = %d\r\n", this->globals->menuMainPointerIdx);
+    this->globals->prideFlagModeIdx = pref.getUInt("prideFlagMode", 1);
+    LOGF_DEBUG("(FSM)  -> prideFlagMode = %d\r\n", this->globals->prideFlagModeIdx);
+    this->globals->animRainbowIdx = pref.getUInt("animRainbow", 0);
+    LOGF_DEBUG("(FSM)  -> animRainbow = %d\r\n", this->globals->animRainbowIdx);
+    this->globals->animSnakeAnimationIdx = pref.getUInt("animSnakeIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animSnakeIdx = %d\r\n", this->globals->animSnakeAnimationIdx);
+    this->globals->animSnakeHueIdx = pref.getUInt("animSnakeHueIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animSnakeHueIdx = %d\r\n", this->globals->animSnakeHueIdx);
+    this->globals->animHeartbeatHue = pref.getUInt("animHbHue", 0);
+    LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
+    this->globals->animHeartbeatSpeed= pref.getUInt("animHbSpeed", 1);
+    LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
+    this->globals->animMatrixIdx= pref.getUInt("animMatrixIdx", 0);
+    LOGF_DEBUG("(FSM)  -> animMatrixIdx = %d\r\n", this->globals->animMatrixIdx);
+    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightPcent", 40);
+    LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
+    pref.end();
 }

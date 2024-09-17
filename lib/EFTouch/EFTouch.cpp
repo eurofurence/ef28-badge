@@ -30,12 +30,16 @@
 
 EFTouchClass::EFTouchClass()
 : pin_fingerprint(EFTOUCH_PIN_TOUCH_FINGERPRINT)
-, pin_nose(EFTOUCH_PIN_TOUCH_FINGERPRINT)
+, pin_nose(EFTOUCH_PIN_TOUCH_NOSE)
 , detection_step(10000)
 , noise_fingerprint(0)
 , noise_nose(0)
+, last_release_millis_fingerprint(0)
+, last_release_millis_nose(0)
 , last_touch_millis_fingerprint(0)
 , last_touch_millis_nose(0)
+, last_multitouch_long(0)
+, last_multitouch_short(0)
 , onFingerprintTouchIsr(nullptr)
 , onFingerprintReleaseIsr(nullptr)
 , onFingerprintShortpressIsr(nullptr)
@@ -61,8 +65,12 @@ void EFTouchClass::init(touch_value_t detection_step, uint8_t pin_fingerprint, u
     this->detection_step = detection_step;
     this->pin_fingerprint = pin_fingerprint;
     this->pin_nose = pin_nose;
+    this->last_release_millis_fingerprint = 0;
+    this->last_release_millis_nose = 0;
     this->last_touch_millis_fingerprint = 0;
     this->last_touch_millis_nose = 0;
+    this->last_multitouch_long = 0;
+    this->last_multitouch_short = 0;
     this->onFingerprintTouchIsr = nullptr;
     this->onFingerprintReleaseIsr = nullptr;
     this->onFingerprintShortpressIsr = nullptr;
@@ -206,15 +214,40 @@ void ARDUINO_ISR_ATTR EFTouchClass::_handleInterrupt(EFTouchZone zone, bool rais
                     this->onFingerprintTouchIsr();
                 }
             } else {
+                // Register last release timestamp
+                this->last_release_millis_fingerprint = millis();
+
                 // Fire onFingerprintShortpressIsr() if applicable
                 if (this->onFingerprintShortpressIsr != nullptr) {
                     if (this->last_touch_millis_fingerprint + EFTOUCH_SHORTPRESS_DURATION_MS < millis()) {
+                        // Check if all touch zones were short pressed 
+                        if (this->onAllShortpressIsr != nullptr && (this->last_multitouch_short + EFTOUCH_MULTITOUCH_COOLDOWN_MS < millis())) {
+                            if ((this->isNoseTouched() || millis() - this->last_release_millis_nose < EFTOUCH_MULTITOUCH_COOLDOWN_MS) &&
+                                (this->last_touch_millis_nose + EFTOUCH_SHORTPRESS_DURATION_MS < millis()))
+                            {
+                                this->last_multitouch_short = millis();
+                                this->onAllShortpressIsr();
+                            }
+                        }
+
+                        // Execute zone ISR
                         this->onFingerprintShortpressIsr();
                     }
                 }
                 // Fire onFingerperintLongpressIsr() if applicable
                 if (this->onFingerprintLongpressIsr != nullptr) {
                     if (this->last_touch_millis_fingerprint + EFTOUCH_LONGPRESS_DURATION_MS < millis()) {
+                        // Check if all touch zones were long pressed 
+                        if (this->onAllLongpressIsr != nullptr && (this->last_multitouch_long + EFTOUCH_MULTITOUCH_COOLDOWN_MS < millis())) {
+                            if ((this->isNoseTouched() || millis() - this->last_release_millis_nose < EFTOUCH_MULTITOUCH_COOLDOWN_MS ) &&
+                                (this->last_touch_millis_nose + EFTOUCH_LONGPRESS_DURATION_MS < millis()))
+                            {
+                                this->last_multitouch_long = millis();
+                                this->onAllLongpressIsr();
+                            }
+                        }
+
+                        // Execute zone ISR
                         this->onFingerprintLongpressIsr();
                     }
                 }
@@ -234,15 +267,39 @@ void ARDUINO_ISR_ATTR EFTouchClass::_handleInterrupt(EFTouchZone zone, bool rais
                     this->onNoseTouchIsr();
                 }
             } else {
+                // Register last release timestamp
+                this->last_release_millis_nose = millis();
+
                 // Fire onNoseShortpressIsr() if applicable
                 if (this->onNoseShortpressIsr != nullptr) {
                     if (this->last_touch_millis_nose + EFTOUCH_SHORTPRESS_DURATION_MS < millis()) {
+                        // Check if all touch zones were short pressed 
+                        if (this->onAllShortpressIsr != nullptr && (this->last_multitouch_short + EFTOUCH_MULTITOUCH_COOLDOWN_MS < millis())) {
+                            if ((this->isFingerprintTouched() || millis() - this->last_release_millis_fingerprint < EFTOUCH_MULTITOUCH_COOLDOWN_MS) &&
+                                (this->last_touch_millis_fingerprint + EFTOUCH_SHORTPRESS_DURATION_MS < millis()))
+                            {
+                                this->last_multitouch_short = millis();
+                                this->onAllShortpressIsr();
+                            }
+                        }
+                        // Execute zone ISR
                         this->onNoseShortpressIsr();
                     }
                 }
                 // Fire onFingerperintLongpressIsr() if applicable
                 if (this->onNoseLongpressIsr != nullptr) {
                     if (this->last_touch_millis_nose + EFTOUCH_LONGPRESS_DURATION_MS < millis()) {
+                        // Check if all touch zones were long pressed 
+                        if (this->onAllLongpressIsr != nullptr && (this->last_multitouch_long + EFTOUCH_MULTITOUCH_COOLDOWN_MS < millis())) {
+                            if ((this->isFingerprintTouched() || millis() - this->last_release_millis_fingerprint < EFTOUCH_MULTITOUCH_COOLDOWN_MS) &&
+                                (this->last_touch_millis_fingerprint + EFTOUCH_LONGPRESS_DURATION_MS < millis()))
+                            {
+                                this->last_multitouch_long = millis();
+                                this->onAllLongpressIsr();
+                            }
+                        }
+
+                        // Execute zone ISR
                         this->onNoseLongpressIsr();
                     }
                 }
@@ -257,6 +314,9 @@ void ARDUINO_ISR_ATTR EFTouchClass::_handleInterrupt(EFTouchZone zone, bool rais
 
 void EFTouchClass::attachInterruptOnTouch(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void)) {
     switch (zone) {
+        case EFTouchZone::All:
+            LOG_ERROR("(EFTouch) Attaching onTouch interrupt to all zones is currently not supported");
+            break;
         case EFTouchZone::Fingerprint:
             if (isr) {
                 this->onFingerprintTouchIsr = isr;
@@ -283,6 +343,9 @@ void EFTouchClass::attachInterruptOnTouch(EFTouchZone zone, void ARDUINO_ISR_ATT
 
 void EFTouchClass::attachInterruptOnRelease(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void)) {
     switch (zone) {
+        case EFTouchZone::All:
+            LOG_ERROR("(EFTouch) Attaching onRelease interrupt to all zones is currently not supported");
+            break;
         case EFTouchZone::Fingerprint:
             if (isr) {
                 this->onFingerprintReleaseIsr = isr;
@@ -309,6 +372,15 @@ void EFTouchClass::attachInterruptOnRelease(EFTouchZone zone, void ARDUINO_ISR_A
 
 void EFTouchClass::attachInterruptOnShortpress(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void)) {
     switch (zone) {
+        case EFTouchZone::All:
+            if (isr) {
+                this->onAllShortpressIsr = isr;
+                LOG_INFO("(EFTouch) Attached onShortpress interrupt to the combined 'All' zone");
+            } else {
+                this->onAllShortpressIsr = nullptr;
+                LOG_INFO("(EFTouch) Detached onShortpress interrupt from the combined 'All' zone");
+            }
+            break;
         case EFTouchZone::Fingerprint:
             if (isr) {
                 this->onFingerprintShortpressIsr = isr;
@@ -335,6 +407,15 @@ void EFTouchClass::attachInterruptOnShortpress(EFTouchZone zone, void ARDUINO_IS
 
 void EFTouchClass::attachInterruptOnLongpress(EFTouchZone zone, void ARDUINO_ISR_ATTR (*isr)(void)) {
     switch (zone) {
+        case EFTouchZone::All:
+            if (isr) {
+                this->onAllLongpressIsr = isr;
+                LOG_INFO("(EFTouch) Attached onLongpress interrupt to the combined 'All' touch zone");
+            } else {
+                this->onAllLongpressIsr = nullptr;
+                LOG_INFO("(EFTouch) Detached onLongpress interrupt from the combined 'All' touch zone");
+            }
+            break;
         case EFTouchZone::Fingerprint:
             if (isr) {
                 this->onFingerprintLongpressIsr = isr;

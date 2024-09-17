@@ -24,10 +24,63 @@
  * @author Honigeintopf
  */
 
+#include <EFLed.h>
+#include <EFLogging.h>
+
 #include "FSMState.h"
+
 
 void FSMState::attachGlobals(std::shared_ptr<FSMGlobals> globals) {
     this->globals = std::move(globals);
+}
+
+bool FSMState::isGlobalsDirty() {
+    return this->is_globals_dirty;
+}
+
+void FSMState::resetGlobalsDirty() {
+    this->is_globals_dirty = false;
+}
+
+void FSMState::lock() {
+    this->is_locked = true;
+    LOG_INFO("(FSM) Locked current state");
+
+    for (uint8_t i = 0; i < 3; i ++) {
+        EFLed.setDragonEye(CRGB::Red);
+        delay(200);
+        EFLed.setDragonEye(CRGB::Black);
+        delay(200);
+    }
+}
+
+void FSMState::unlock() {
+    this->is_locked = false;
+
+    for (uint8_t i = 0; i < 3; i ++) {
+        EFLed.setDragonEye(CRGB::Green);
+        delay(200);
+        EFLed.setDragonEye(CRGB::Black);
+        delay(200);
+    }
+
+    LOG_INFO("(FSM) Unlocked current state")
+}
+
+void FSMState::toggleLock() {
+    if (this->isLocked()) {
+        this->unlock();
+    } else {
+        this->lock();
+    }
+}
+
+bool FSMState::isLocked() {
+    return this->is_locked;
+}
+
+bool FSMState::shouldBeRemembered() {
+    return false;
 }
 
 const char* FSMState::getName() {
@@ -73,5 +126,13 @@ std::unique_ptr<FSMState> FSMState::touchEventNoseShortpress() {
 }
 
 std::unique_ptr<FSMState> FSMState::touchEventNoseLongpress() {
+    return nullptr;
+}
+
+std::unique_ptr<FSMState> FSMState::touchEventAllShortpress() {
+    return nullptr;
+}
+
+std::unique_ptr<FSMState> FSMState::touchEventAllLongpress() {
     return nullptr;
 }

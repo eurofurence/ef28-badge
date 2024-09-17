@@ -33,21 +33,21 @@
 
 #include "EFBoard.h"
 
-
 RTC_DATA_ATTR uint32_t bootCount = 0;
 
 volatile int8_t ota_last_progress = -1;
 
 EFBoardClass::EFBoardClass()
-: power_state(EFBoardPowerState::UNKNOWN) {
+    : power_state(EFBoardPowerState::UNKNOWN) {
     bootCount++;
 }
 
 void EFBoardClass::setup() {
     // Setup serial
-    delay(EFBOARD_SERIAL_INIT_DELAY_MS);
+    // If flashing often fails, you can add a safety-backoff delay before running serial which helps with flashing
+    //delay(2000);
     EFBOARD_SERIAL_DEVICE.begin(EFBOARD_SERIAL_BAUD);
-    delay(EFBOARD_SERIAL_INIT_DELAY_MS);
+    delay(50);
 
     LOG("\r\n");
     this->printCredits();
@@ -67,14 +67,21 @@ void EFBoardClass::setup() {
     analogReadResolution(12);
     LOG_DEBUG("(EFBoard) Set ADC read resolution to: 12 bit");
     pinMode(EFBOARD_PIN_VBAT, INPUT);
-    LOG_INFO("(EFBoard) Inizialized battery sense ADC")
+    LOG_INFO("(EFBoard) Initialized battery sense ADC")
+
+    // Seed rnd
+    randomSeed(analogRead(0));
 
     // Check power state
+    this->updatePowerState();
     const EFBoardPowerState pwrstate = this->getPowerState();
     if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
         LOGF_ERROR("(EFBoard) HARD BROWN OUT DETECTED (V_BAT = %.2f V). Panic!\r\n", this->getBatteryVoltage());
-        while(1) {
-            delay(1000);
+        while (1) {
+            // TODO: use actual hard brownout code here
+            // sleep most of the time.
+            esp_sleep_enable_timer_wakeup(5 * 1000000);
+            esp_light_sleep_start();
         }
     } else if (pwrstate == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
         LOGF_WARNING("(EFBoard) Soft brown out detected (V_BAT = %.2f V)\r\n", this->getBatteryVoltage());
@@ -98,16 +105,16 @@ unsigned int EFBoardClass::getWakeupCount() {
     return bootCount;
 }
 
-const char* EFBoardClass::getWakeupReason() {
+const char *EFBoardClass::getWakeupReason() {
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
 
-    switch(wakeup_reason) {
+    switch (wakeup_reason) {
         case ESP_SLEEP_WAKEUP_EXT0:
             return "Wakeup caused by external signal using RTC_IO";
         case ESP_SLEEP_WAKEUP_EXT1:
             return "Wakeup caused by external signal using RTC_CNTL";
-        case ESP_SLEEP_WAKEUP_TIMER: 
+        case ESP_SLEEP_WAKEUP_TIMER:
             return "Wakeup caused by timer";
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
             return "Wakeup caused by touchpad";
@@ -125,14 +132,21 @@ const char* EFBoardClass::getWakeupReason() {
             return "Wakeup caused by coprocessor CRASH";
         case ESP_SLEEP_WAKEUP_BT:
             return "Wakeup caused by Bluetooth";
-        default: 
+        default:
             return "Wakeup was not caused by deep sleep (regular boot)";
     }
 }
 
 const float EFBoardClass::getBatteryVoltage() {
-    // voltageBattery = adcValue * voltPerADCStep * voltageDividerRatio
-    return (analogRead(EFBOARD_PIN_VBAT) * (3.3 / 4095.0)) * ((51.1 + 100.0) / 100.0);
+    // Voltage divider resistors: R11 = 51.1k, R12 = 100k
+    constexpr float R1 = 51.1f;
+    constexpr float R2 = 100.0f;
+    constexpr float ADC_MAX_VALUE = 4095.0f;
+    constexpr float ADC_REF_VOLTAGE = 3.5f; // Reference voltage for ADC. Should be 3.3V, but the results are wonky. 3.5 works better
+
+    constexpr float voltage_divider_factor = (R1 + R2) / R2;
+    float battery_voltage = (analogRead(EFBOARD_PIN_VBAT) * (ADC_REF_VOLTAGE / ADC_MAX_VALUE)) * voltage_divider_factor;
+    return battery_voltage;
 }
 
 const bool EFBoardClass::isBatteryPowered() {
@@ -142,7 +156,7 @@ const bool EFBoardClass::isBatteryPowered() {
 const uint8_t EFBoardClass::getBatteryCapacityPercent() {
     /* Used Varta Longlife AA cells discharge curve as a base.
      *
-     * We consider 1.16 V as empty even though the cells are not empty at that
+     * We consider 1.12 V as empty even though the cells are not empty at that
      * point due to the brown out voltage of the DC/DC for the 3.3V rail.
      *
      * Data points used to fit cubic function to:
@@ -153,6 +167,7 @@ const uint8_t EFBoardClass::getBatteryCapacityPercent() {
      *   - 1.20 V =  23 %
      *   - 1.16 V =   0 %
      */
+    // TODO: This is a bit outdated/off
     double vBatCell = this->getBatteryVoltage() / 3.0;
     double percent = (14.9679 * pow(vBatCell, 3) - 68.9823 * pow(vBatCell, 2) + 106.4289 * vBatCell - 54.0063) * 100.0;
     return max(min((int) round(percent), 100), 0);
@@ -162,7 +177,21 @@ const EFBoardPowerState EFBoardClass::updatePowerState() {
     if (!this->isBatteryPowered()) {
         this->power_state = EFBoardPowerState::USB;
     } else {
-        const float vbat = this->getBatteryVoltage();
+        float vbat = this->getBatteryVoltage();
+
+        if (vbat <= EFBOARD_BROWN_OUT_SOFT) {
+            // A low-battery state could be a momentary spike
+            // We take multiple samples to make sure we are really low on battery
+            float sum = 0.0f;
+            constexpr uint8_t samples = 5;
+            for (uint8_t i = 0; i < samples; i++) {
+                sum += this->getBatteryVoltage();
+                delay(1);
+            }
+            vbat = sum / samples;
+            LOGF("BATTERY: Measurement average: %f\r\n", vbat);
+        }
+
         if (vbat <= EFBOARD_BROWN_OUT_HARD || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_HARD) {
             this->power_state = EFBoardPowerState::BAT_BROWN_OUT_HARD;
         } else if (vbat <= EFBOARD_BROWN_OUT_SOFT || this->power_state == EFBoardPowerState::BAT_BROWN_OUT_SOFT) {
@@ -170,7 +199,6 @@ const EFBoardPowerState EFBoardClass::updatePowerState() {
         } else {
             this->power_state = EFBoardPowerState::BAT_NORMAL;
         }
-
     }
 
     return this->power_state;
@@ -185,16 +213,16 @@ const EFBoardPowerState EFBoardClass::resetPowerState() {
     return this->updatePowerState();
 }
 
-bool EFBoardClass::connectToWifi(const char* ssid, const char* password) {
+bool EFBoardClass::connectToWifi(const char *ssid, const char *password) {
     LOGF_INFO("(EFBoard) Connecting to WiFi network: %s ", ssid);
 
-    // Try to connect to wifi
+    // Try to connect to WiFi
     WiFi.begin(ssid, password);
     WiFi.setSleep(true);
     for (int32_t timeout_ms = 10000; timeout_ms >= 0; timeout_ms -= 200) {
         LOGF(".", 0);
         delay(200);
-        
+
         // Check if connection failed
         if (WiFi.status() == WL_CONNECT_FAILED) {
             LOG(" FAILED!");
@@ -231,7 +259,7 @@ bool EFBoardClass::disableWifi() {
     return true;
 }
 
-void EFBoardClass::enableOTA(const char* password) {
+void EFBoardClass::enableOTA(const char *password) {
     LOG_INFO("(EFBoard) Initializing OTA ... ");
 
     if (password) {
@@ -242,59 +270,59 @@ void EFBoardClass::enableOTA(const char* password) {
     }
 
     ArduinoOTA
-        .onStart([]() {
-            if (ArduinoOTA.getCommand() == U_FLASH) {
-                LOG_INFO("(OTA) Start OTA update of U_FLASH ...");
-            } else {
-                LOG_INFO("(OTA) Starting OTA update of U_SPIFFS ...");
-            }
+            .onStart([]() {
+                if (ArduinoOTA.getCommand() == U_FLASH) {
+                    LOG_INFO("(OTA) Start OTA update of U_FLASH ...");
+                } else {
+                    LOG_INFO("(OTA) Starting OTA update of U_SPIFFS ...");
+                }
 
-            // Reset progress
-            ota_last_progress = -1;
+                // Reset progress
+                ota_last_progress = -1;
 
-            // Setup LEDs
-            EFLed.clear();
-            EFLed.setBrightness(50);
-            EFLed.setDragonEye(CRGB::Blue);
-        })
-        .onEnd([]() {
-            LOG_INFO("(OTA) Finished! Rebooting ...");
-            for (uint8_t i = 0; i < 3; i++) {
-                EFLed.setDragonEye(CRGB::Green);
-                delay(500);
-                EFLed.setDragonEye(CRGB::Black);
-                delay(500);
-            }
-            EFLed.clear();
-        })
-        .onProgress([](unsigned int progress, unsigned int total) {
-            uint8_t progresspercent = (progress / (total / 100));
-            if (ota_last_progress < progresspercent) {
-                ota_last_progress = progresspercent;
-                EFLed.fillEFBarProportionally(progresspercent, CRGB::Red, CRGB::Black);
-                LOGF_INFO("(OTA) Progress: %u%%\r\n", progresspercent);
-            }
-        })
-        .onError([](ota_error_t error) {
-            LOGF_ERROR("(OTA) Error[%u]: ", error);
-            EFLed.setDragonNose(CRGB::Red);
-            if (error == OTA_AUTH_ERROR) {
-                LOG_WARNING("(OTA) Auth Failed");
-                EFLed.setDragonNose(CRGB::Purple);
-            } else if (error == OTA_BEGIN_ERROR) {
-                EFLed.setDragonNose(CRGB::Green);
-                LOG_ERROR("(OTA) Begin Failed");
-            } else if (error == OTA_CONNECT_ERROR) {
-                EFLed.setDragonNose(CRGB::Purple);
-                LOG_ERROR("(OTA) Connect Failed");
-            } else if (error == OTA_RECEIVE_ERROR) {
-                EFLed.setDragonNose(CRGB::Blue);
-                LOG_ERROR("(OTA) Receive Failed");
-            } else if (error == OTA_END_ERROR) {
-                EFLed.setDragonNose(CRGB::Yellow);
-                LOG_ERROR("(OTA) End Failed");
-            }
-        });
+                // Setup LEDs
+                EFLed.clear();
+                EFLed.setBrightnessPercent(50);
+                EFLed.setDragonEye(CRGB::Blue);
+            })
+            .onEnd([]() {
+                LOG_INFO("(OTA) Finished! Rebooting ...");
+                for (uint8_t i = 0; i < 3; i++) {
+                    EFLed.setDragonEye(CRGB::Green);
+                    delay(500);
+                    EFLed.setDragonEye(CRGB::Black);
+                    delay(500);
+                }
+                EFLed.clear();
+            })
+            .onProgress([](unsigned int progress, unsigned int total) {
+                uint8_t progresspercent = (progress / (total / 100));
+                if (ota_last_progress < progresspercent) {
+                    ota_last_progress = progresspercent;
+                    EFLed.fillEFBarProportionally(progresspercent, CRGB::Red, CRGB::Black);
+                    LOGF_INFO("(OTA) Progress: %u%%\r\n", progresspercent);
+                }
+            })
+            .onError([](ota_error_t error) {
+                LOGF_ERROR("(OTA) Error[%u]: ", error);
+                EFLed.setDragonNose(CRGB::Red);
+                if (error == OTA_AUTH_ERROR) {
+                    LOG_WARNING("(OTA) Auth Failed");
+                    EFLed.setDragonNose(CRGB::Purple);
+                } else if (error == OTA_BEGIN_ERROR) {
+                    EFLed.setDragonNose(CRGB::Green);
+                    LOG_ERROR("(OTA) Begin Failed");
+                } else if (error == OTA_CONNECT_ERROR) {
+                    EFLed.setDragonNose(CRGB::Purple);
+                    LOG_ERROR("(OTA) Connect Failed");
+                } else if (error == OTA_RECEIVE_ERROR) {
+                    EFLed.setDragonNose(CRGB::Blue);
+                    LOG_ERROR("(OTA) Receive Failed");
+                } else if (error == OTA_END_ERROR) {
+                    EFLed.setDragonNose(CRGB::Yellow);
+                    LOG_ERROR("(OTA) End Failed");
+                }
+            });
 
     ArduinoOTA.begin();
 
@@ -364,5 +392,5 @@ void EFBoardClass::printCredits() {
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EFBOARD)
-EFBoardClass EFBoard;   
+EFBoardClass EFBoard;
 #endif

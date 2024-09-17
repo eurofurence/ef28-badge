@@ -67,21 +67,31 @@ The badge firmware is built using [PlatformIO](https://platformio.org/), an
 extension for [Visual Studio Code](https://code.visualstudio.com/) that allows
 beginners to quickly get hacking.
 
+### Building with Visual Studio Code (VCS)
+
 To set up your development environment, you need to:
 
 1. Install Visual Studio Code and PlatformIO, as described in the official
-[PlatformIO documentation](https://docs.platformio.org/en/latest/integration/ide/vscode.html#installation)
+   [PlatformIO documentation](https://docs.platformio.org/en/latest/integration/ide/vscode.html#installation)
 2. Clone this repository to a suitable location (here: `~/git/ef28-badge`)
 3. Open the project under `~/git/ef28-badge` using the PlatformIO IDE
 4. Copy `include/secrets.h.dist` to `include/secrets.h` and adjust as needed
-4. Execute the build by pressing the build button (1) or using the hotkey
-(`CTRL + ALT + B`)
-5. Check that your build was successful (2)
+5. Execute the build by pressing the build button (1) or using the hotkey (`CTRL + ALT + B`)
+6. Check that your build was successful (2)
 
 _Note: The first build can take a while since additional tools and libraries
-may neet to be downloaded_
+may need to be downloaded_
 
 ![Screenshot: Building the firmware using VS Code](docs/assets/vscode_build.png)
+
+### Building from CLI
+
+You can archive most things with the `pio` command from PlatformIO.
+
+* Build firmware: `pio run`
+* Upload firmware: `pio run --target upload`
+* Clean generated files: `pio run --target clean`
+* Attach serial monitor: `pio device monitor`
 
 
 ## Component Overview
@@ -114,7 +124,7 @@ After you've built your firmware, you can flash it by either connecting the
 badge via USB to your computer, or by using over-the-air (OTA) updates.
 
 _Note: OTA updates are only supported after an initial flash using a USB
-connection_ 
+connection_
 
 
 ### USB
@@ -134,6 +144,18 @@ prior to the first flashing._
 ![Screenshot: Flashing the firmware via USB using VS Code](docs/assets/vscode_upload_usb.png)
 
 
+#### Notes and Pitfalls
+
+If you encounter issues flashing via USB, try the following:
+
+* Some USB cables or ports are flaky. Try a different USB port or change the
+  USB-C -> USB-C cable to a USB-A -> USB-C or vice versa.
+* Make sure no program is opening the serial port while you flash. For example
+  serial monitors in auto-connect mode.
+* If it still fails, bridge the boot-pins when turning on. The badge should
+  load into a simple bootloader and wait.
+
+
 ### Over-the-Air Updates (OTA)
 
 If you want to flash the badge using over-the-air updates (OTA), it must be
@@ -143,11 +165,11 @@ To flash a badge using OTA, you need to:
 
 1. Make sure to have the correct Wi-Fi credentials supplied in `include/secrets.h`
 2. Determine the badge IP address
-   - This can be done by connecting your badge to your computer, opening the
-     serial monitor, and letting it connect to your Wi-Fi. After a successful
-     connection, the badge will print its IP and MAC addresses to the serial console.
+    - This can be done by connecting your badge to your computer, opening the
+      serial monitor, and letting it connect to your Wi-Fi. After a successful
+      connection, the badge will print its IP and MAC addresses to the serial console.
 3. Uncomment all `upload_*` entries in your `platformio.ini` and adjust
-  `upload_port` to the IP address of your badge.
+   `upload_port` to the IP address of your badge.
 4. Ensure that the badge is in OTA mode
 5. Click the upload button or use the hotkey (`CTRL + ALT + U`)
 6. Wait for the flashing to finish. The badge will display the OTA progress
@@ -169,33 +191,20 @@ For convenience, here is an exported PDF version of the schematics:
 [![Screenshot: Schematics thumbnail](docs/assets/efbadge-schematic_thumb.png)](hardware/efbadge-schematic.pdf)
 
 
+# Releases
+
+The release-versions are based on [CalVer](https://calver.org/), with the pattern `vYYYY.MM.DD(-SUB)` where `SUB` is for potential sub-daily releases.
+
+
+# Useful links
+
+* ESP32-S3 Pin-out and functions: https://github.com/atomic14/esp32-s3-pinouts
+
+
 # Credits
 
 This badge was designed, crafted and programmed with much love and dedication
-by: DarkRat, Token, Irah, Honigeintopf. The wonderful artwork is done by
-[Fleeks](https://www.furaffinity.net/user/fleeks).
+by: [DarkRat](https://github.com/dunkelratte), [Token](https://github.com/TokenRat),
+[Irah](https://github.com/tridekdu), [Honigeintopf](https://github.com/ngandrass).
 
-
-# License
-
-MIT License
-
-Copyright 2024 Eurofurence e.V. 
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the “Software”),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
+The wonderful artwork is done by [Fleeks](https://www.furaffinity.net/user/fleeks).

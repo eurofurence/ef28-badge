@@ -40,6 +40,8 @@ class FSMState {
     protected:
     
         std::shared_ptr<FSMGlobals> globals;  //!< Pointer to global FSM state variables
+        bool is_globals_dirty;                //!< Marks globals as dirty, causing it to be persisted to NVS
+        bool is_locked;                       //!< True, if the state should be considered as locked
 
     public:
         /**
@@ -48,11 +50,54 @@ class FSMState {
         void attachGlobals(std::shared_ptr<FSMGlobals> globals);
 
         /**
+         * @brief Determines, if the globals struct was modified and requires
+         * to be persisted to NVS by the FSM controller
+         */
+        bool isGlobalsDirty();
+
+        /**
+         * @brief Resets the dirty flag for FSM globals object. Should be called
+         * after globals were successfully persisted.
+         */
+        void resetGlobalsDirty();
+
+        /**
+         * @brief Marks the current state as locked. Locked states should not accept any
+         * commands apart from unlock.
+         */
+        void lock();
+        
+        /**
+         * @brief Unlocks a previously locked state
+         */
+        void unlock();
+
+        /**
+         * @brief Toggles the lock state of this state
+         */
+        void toggleLock();
+
+        /**
+         * @brief Determins if this state is currently locked
+         * 
+         * @return True, if this state is currently locked
+         */
+        bool isLocked();
+
+        /**
          * @brief Provides access to the name of this state
          * 
          * @return Name of this state
          */
         virtual const char* getName();
+
+        /**
+         * @brief If true, the FSM will persist this state and resume to it after
+         * reboot, if no other transition to another rememberable state happened since
+         * 
+         * @return True, if the FSM should remember this state and resume to it upon reboot
+         */
+        virtual bool shouldBeRemembered();
 
         /**
          * @brief Provides access to the tick rate of this state
@@ -117,10 +162,19 @@ class FSMState {
          */
         virtual std::unique_ptr<FSMState> touchEventNoseLongpress();
 
+        /**
+         * @brief Executed on FSMEvent::AllShortpress
+         */
+        virtual std::unique_ptr<FSMState> touchEventAllShortpress();
+
+        /**
+         * @brief Executed on FSMEvent::AllLongpress
+         */
+        virtual std::unique_ptr<FSMState> touchEventAllLongpress();
 };
 
 /**
- * @brief Main state: Displays a pride flag
+ * @brief Displays pride flags
  */
 struct DisplayPrideFlag : public FSMState {
     uint32_t tick = 0;
@@ -128,34 +182,117 @@ struct DisplayPrideFlag : public FSMState {
     unsigned int switchdelay_ms = 5000;
 
     virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
     virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;
     virtual void run() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 };
 
 /**
- * @brief Main state: Displays an animation
+ * @brief Displays rainbow animations
  */
-struct DisplayAnimation : public FSMState {
+struct AnimateRainbow : public FSMState {
     uint32_t tick = 0;
 
     virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
     virtual const unsigned int getTickRateMs() override;
 
     virtual void entry() override;
     virtual void run() override;
 
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 
-    void _animateKnightRider();
-    void _animateMatrix();
     void _animateRainbow();
     void _animateRainbowCircle();
+};
+
+/**
+ * @brief Displays matrix animation
+ */
+struct AnimateMatrix : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+    virtual const unsigned int getTickRateMs() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
+};
+
+/**
+ * @brief Displays snake animations
+ */
+struct AnimateSnake : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+    virtual const unsigned int getTickRateMs() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
+
     void _animateSnake();
+    void _animateKnightRider();
+
+    void _animatePulse();
+
+    void _animateRandom();
+};
+
+/**
+ * @brief Displays pulsing color
+ */
+struct AnimateHeartbeat : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+    virtual const unsigned int getTickRateMs() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventNoseRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventNoseShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
+};
+
+/**
+ * @brief Accept and handle OTA updates
+ */
+struct OTAUpdate : public FSMState {
+    virtual const char* getName() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+    virtual void exit() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
 };
 
 /**
@@ -163,25 +300,7 @@ struct DisplayAnimation : public FSMState {
  */
 struct MenuMain : public FSMState {
     uint8_t menucursor_idx = 0;
-
-    virtual const char* getName() override;
-
-    virtual void entry() override;
-    virtual void exit() override;
-
-    virtual std::unique_ptr<FSMState> touchEventFingerprintTouch() override;
-    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
-    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
-    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
-
-    virtual std::unique_ptr<FSMState> touchEventNoseLongpress() override;
-};
-
-/**
- * @brief Sub-Menu: Pride flag selector
- */
-struct MenuPrideFlagSelector : public FSMState {
-    std::unique_ptr<DisplayPrideFlag> prideFlagDisplayRunner;
+    uint32_t tick = 0;
 
     virtual const char* getName() override;
     virtual const unsigned int getTickRateMs() override;
@@ -193,19 +312,7 @@ struct MenuPrideFlagSelector : public FSMState {
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
     virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
-};
-
-/**
- * @brief Sub-Menu: Accept OTA updates
- */
-struct MenuOTAUpdate : public FSMState {
-    virtual const char* getName() override;
-
-    virtual void entry() override;
-    virtual void run() override;
-    virtual void exit() override;
-
-    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventNoseLongpress() override;
 };
 
 #endif /* FSM_STATE_H_ */

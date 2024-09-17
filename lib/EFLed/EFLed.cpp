@@ -31,6 +31,26 @@
 
 #include "EFLed.h"
 
+static const EFLedClass::LEDPosition led_positions[] = {
+    {17, 126},  // 0
+    {21, 106},
+    {23, 91},
+    {41, 86},
+    {35, 48},
+    {37, 43},  // 5
+    {61, 15},
+    {61, 27},
+    {61, 41},
+    {61, 54},
+    {61, 67},  // 10
+    {61, 79},
+    {61, 93},
+    {61, 105},
+    {61, 118},
+    {61, 131},  // 15
+    {61, 144}
+};
+
 EFLedClass::EFLedClass()
 : max_brightness(0)
 , led_data({0})
@@ -41,7 +61,7 @@ void EFLedClass::init() {
     this->init(EFLED_MAX_BRIGHTNESS_DEFAULT);
 }
 
-void EFLedClass::init(const uint8_t max_brightness) {
+void EFLedClass::init(const uint8_t absolute_max_brightness) {
     for (uint8_t i = 0; i < EFLED_TOTAL_NUM; i++) {
         this->led_data[i] = CRGB::Black;
     }
@@ -51,18 +71,18 @@ void EFLedClass::init(const uint8_t max_brightness) {
     FastLED.addLeds<WS2812B, EFLED_PIN_LED_DATA, GRB>(this->led_data, EFLED_TOTAL_NUM);
     LOGF_DEBUG("(EFLed) Added new WS2812B: %d LEDs @ PIN %d\r\n", EFLED_TOTAL_NUM, EFLED_PIN_LED_DATA);
 
-    this->max_brightness = max_brightness;
+    this->max_brightness = absolute_max_brightness;
     FastLED.setBrightness(this->max_brightness);
     LOGF_DEBUG("(EFLed) Set max_brightness=%d\r\n", this->max_brightness)
 
-    this->enablePower();
+    enablePower();
 }
 
 void EFLedClass::enablePower() {
     pinMode(EFLED_PIN_5VBOOST_ENABLE, OUTPUT);
     digitalWrite(EFLED_PIN_5VBOOST_ENABLE, HIGH);
     LOG_INFO("(EFLed) Enabled +5V boost converter");
-    delay(10);
+    delay(1);
 }
 
 void EFLedClass::disablePower() {
@@ -78,12 +98,12 @@ void EFLedClass::clear() {
     FastLED.show();
 }
 
-void EFLedClass::setBrightness(uint8_t brightness) {
+void EFLedClass::setBrightnessPercent(uint8_t brightness) {
     FastLED.setBrightness(round((min(brightness, (uint8_t) 100) / (float) 100) * this->max_brightness));
     FastLED.show();
 }
 
-uint8_t EFLedClass::getBrightness() {
+uint8_t EFLedClass::getBrightnessPercent() const {
     return (uint8_t) round(FastLED.getBrightness() / (float) this->max_brightness * 100);
 }
 
@@ -159,10 +179,19 @@ void EFLedClass::setEFBarCursor(
     const CRGB color_on,
     const CRGB color_off
 ) {
-    for (uint8_t i = 0; i < EFLED_EFBAR_NUM; i++) {
-        this->led_data[EFLED_EFBAR_OFFSET + i] = (i == idx) ? color_on : color_off;
+    for (int8_t i = 0; i < EFLED_EFBAR_NUM; i++) {
+        int8_t distance = abs((int16_t)idx - i);
+        uint8_t fade = static_cast<uint8_t>(std::clamp(distance * 64.0f, 0.0f, 255.0f));
+        this->led_data[EFLED_EFBAR_OFFSET + i] = (i == idx) ? color_on : color_off.scale8(fade);
     }
     FastLED.show();
+}
+
+EFLedClass::LEDPosition EFLedClass::getLEDPosition(const uint8_t idx) {
+    if (idx < std::size(led_positions)) {
+        return led_positions[idx];
+    }
+    return {0, 0};  // Returning default position (0, 0) for out-of-bounds
 }
 
 void EFLedClass::fillEFBarProportionally(

@@ -29,43 +29,115 @@
 
 #include "FSMState.h"
 
-const char* MenuMain::getName() {
+/**
+ * @brief Number of registered menu items
+ */
+#define MENUMAIN_NUM_MENU_ITEMS 5
+
+CRGB menuColors[11] = {
+    CRGB(40,10,10),
+    CRGB(10, 40,10),
+    CRGB(10,10, 40),
+    CRGB(40, 40,10),
+    CRGB(40,10, 40),
+    CRGB(10, 40, 40),
+    CRGB(20, 20, 40),
+    CRGB(40, 20, 20),
+    CRGB(20, 40, 20),
+    CRGB(40, 40, 20),
+    CRGB(20, 40, 40)
+};
+
+const char *MenuMain::getName() {
     return "MenuMain";
+}
+
+const unsigned int MenuMain::getTickRateMs() {
+    return 100;
 }
 
 void MenuMain::entry() {
     EFLed.clear();
-    EFLed.setDragonEye(CRGB::Green);
-    EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, CRGB::Purple, CRGB::Black);
+    EFLed.setDragonCheek(CRGB::Green);
+    EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, CRGB::Silver, CRGB::Black);
+    this->tick = 0;
+}
+
+void MenuMain::run() {
+    CRGB cursorColor = tick % 6 < 2 ? CRGB::Silver : CRGB::DarkBlue;
+    EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, cursorColor, menuColors[this->globals->menuMainPointerIdx]);
+
+    this->tick++;
 }
 
 void MenuMain::exit() {
     EFLed.clear();
 }
 
-std::unique_ptr<FSMState> MenuMain::touchEventFingerprintTouch() {
-    return nullptr;
-}
-
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintRelease() {
-    this->globals->menuMainPointerIdx = (this->globals->menuMainPointerIdx + 1) % 2;
-    EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, CRGB::Purple, CRGB::Black);
+    this->globals->menuMainPointerIdx = (this->globals->menuMainPointerIdx + 1) % MENUMAIN_NUM_MENU_ITEMS;
+    EFLed.setEFBarCursor(this->globals->menuMainPointerIdx, CRGB::Purple, menuColors[this->globals->menuMainPointerIdx]);
     return nullptr;
 }
 
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
     LOGF_DEBUG("(MenuMain) menuMainPointerIdx = %d\r\n", this->globals->menuMainPointerIdx);
     switch (this->globals->menuMainPointerIdx) {
-        case 0: return std::make_unique<MenuPrideFlagSelector>();
-        case 1: return std::make_unique<DisplayAnimation>();
+        // NOTE: Increase MENUMAIN_NUM_MENU_ITEMS define at the top of this file
+        case 0: return std::make_unique<DisplayPrideFlag>();
+        case 1: return std::make_unique<AnimateRainbow>();
+        case 2: return std::make_unique<AnimateMatrix>();
+        case 3: return std::make_unique<AnimateSnake>();
+        case 4: return std::make_unique<AnimateHeartbeat>();
+//        case 5: return std::make_unique<OTAUpdate>(); // OTA Update not in production firmware
         default: return nullptr;
     }
 }
 
 std::unique_ptr<FSMState> MenuMain::touchEventFingerprintLongpress() {
-    return std::make_unique<DisplayPrideFlag>();
+    return this->touchEventFingerprintShortpress();
 }
 
 std::unique_ptr<FSMState> MenuMain::touchEventNoseLongpress() {
-    return std::make_unique<MenuOTAUpdate>();
+    EFLed.clear();
+    EFLed.setDragonEye(CRGB::White);
+
+    uint8_t currentBrightness = this->globals->ledBrightnessPercent;
+    // if we start at 10, it will be 10 -> 40 -> 70 -> 100 -> 10…
+    uint8_t newBrightness =  currentBrightness + 30;
+    if (newBrightness > 100) {
+        // wrap over to minimum brightness again
+        newBrightness = 10;
+    }
+    LOGF_DEBUG("(MenuMain) Setting brightness percent to %d\r\n", newBrightness);
+
+    // animate to new brightness
+    CRGB data[EFLED_EFBAR_NUM];
+    fill_solid(data, EFLED_EFBAR_NUM, CRGB::Black);
+    float stepSize = (newBrightness - currentBrightness) / 10.0f;
+    fill_solid(data, map(currentBrightness, 0, 100, 0, EFLED_EFBAR_NUM), CRGB(30, 30, 30));
+    EFLed.setEFBar(data);
+    delay(100);
+    fill_solid(data, map(currentBrightness, 0, 100, 0, EFLED_EFBAR_NUM), CRGB(100, 100, 100));
+    EFLed.setEFBar(data);
+    delay(200);
+    for(int8_t i = 1; i <= 10; i++) {
+        float interpolatedBrightness = currentBrightness + (i * stepSize);
+        EFLed.setBrightnessPercent(interpolatedBrightness);
+        fill_solid(data, EFLED_EFBAR_NUM, CRGB::Black);
+        fill_solid(data, map(interpolatedBrightness, 0, 100, 0, EFLED_EFBAR_NUM), CRGB(100, 100, 100));
+        EFLed.setEFBar(data);
+        delay(40);
+    }
+    fill_solid(data, map(newBrightness, 0, 100, 0, EFLED_EFBAR_NUM), CRGB(100, 100, 100));
+    EFLed.setEFBar(data);
+    delay(400);
+
+    this->globals->ledBrightnessPercent = newBrightness;
+    this->is_globals_dirty = true;
+    EFLed.setBrightnessPercent(this->globals->ledBrightnessPercent);
+
+    // reset view
+    this->entry();
+    return nullptr;
 }
