@@ -1,3 +1,4 @@
 # Hardware
 
-The full KiCad project files will be made available during Eurofurence 28. Please wait until then. Thanks
+This is a [KiCad](https://www.kicad.org/) project.
+
