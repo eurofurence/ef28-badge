@@ -191,6 +191,11 @@ For convenience, here is an exported PDF version of the schematics:
 [![Screenshot: Schematics thumbnail](docs/assets/efbadge-schematic_thumb.png)](hardware/efbadge-schematic.pdf)
 
 
+# Releases
+
+The release-versions are based on [CalVer](https://calver.org/), with the pattern `vYYYY.MM.DD(-SUB)` where `SUB` is for potential sub-daily releases.
+
+
 # Useful links
 
 * ESP32-S3 Pin-out and functions: https://github.com/atomic14/esp32-s3-pinouts

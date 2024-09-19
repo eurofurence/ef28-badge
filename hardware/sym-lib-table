@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "EF_Badge")(type "KiCad")(uri "${KIPRJMOD}/Design/EF_Badge.kicad_sym")(options "")(descr ""))
+)

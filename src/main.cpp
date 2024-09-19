@@ -99,7 +99,7 @@ void _hardBrownOutHandler() {
         // Low brightness blink every few seconds
         EFLed.enablePower();
         EFLed.setDragonNose(CRGB::Red);
-        esp_sleep_enable_timer_wakeup(100 * 1000);  // 100 ms
+        esp_sleep_enable_timer_wakeup(200 * 1000);  // 200 ms
         EFLed.disablePower();
         // sleep most of the time.
         esp_sleep_enable_timer_wakeup(2 * 1000 * 1000);  // 2s
@@ -134,10 +134,10 @@ void _softBrownOutHandler() {
         for (uint8_t n = 0; n < 30; n++) {
             EFLed.enablePower();
             EFLed.setDragonNose(CRGB::Red);
-            esp_sleep_enable_timer_wakeup(200 * 1000);
+            esp_sleep_enable_timer_wakeup(300 * 1000);
             esp_light_sleep_start();
             EFLed.disablePower();
-            esp_sleep_enable_timer_wakeup(800 * 1000);
+            esp_sleep_enable_timer_wakeup(700 * 1000);
             esp_light_sleep_start();
         }
 
