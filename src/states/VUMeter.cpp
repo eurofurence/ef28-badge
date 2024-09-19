@@ -21,7 +21,7 @@
 // IN THE SOFTWARE.
 
 /**
- * @author Honigeintopf
+ * @author 32
  */
 
 #include <EFLed.h>
@@ -29,16 +29,10 @@
 
 #include "FSMState.h"
 
+#define AUDIO_PIN 14
+
 const int hue_list[] = {
-    130,  // Start with matrix, I mean Eurofurence, green <3
-    160,
-    200,
-    240,
-    280,
-    320,
-    0,
-    40,
-    80,
+110,110,110,110,110,110,110,110,110,110,110
 };
 
 const char* VUMeter::getName() {
@@ -53,31 +47,50 @@ void VUMeter::entry() {
     this->tick = 0;
 }
 
+int sMin = 0;
+int sMax = 4096;
+
 void VUMeter::run() {
-    // map the 360 degree hue value to a byte
-    int mappedHue = map(hue_list[this->globals->animMatrixIdx], 0, 359, 0, 255);
+
+    int sample = analogRead(AUDIO_PIN);
+
+    // Update max and min values
+    if (sample < sMin) {
+        sMin = sample;
+    }
+    if (sample > sMax) {
+        sMax = sample;
+    }
+
+
+    // Calculate peak-to-peak range (this is the signal strength)
+    int peakToPeak = sMax - sMin;
+
+    // Map the peak-to-peak value to a range of 0 to NUM_LEDS
+    uint8_t n = map(peakToPeak, 0, 4096, 0, 12);
+
 
     std::vector<CRGB> dragon = {
         CRGB::Black,
-        CHSV(mappedHue, 255, 40),
-        CHSV(mappedHue, 255, 110),
-        CHSV(mappedHue, 255, 255),
+        CHSV(0, 255, 40),
+        CHSV(0, 255, 110),
+        CHSV(0, 255, 255),
         CRGB::Black,
         CRGB::Black
     };
 
     std::vector<CRGB> bar = {
-        CHSV(mappedHue, 255, 50),
-        CHSV(mappedHue, 255, 110),
-        CHSV(mappedHue, 255, 255),
-        CRGB::Black,
-        CRGB::Black,
-        CHSV(mappedHue, 255, 70),
-        CHSV(mappedHue, 255, 100),
-        CHSV(mappedHue, 255, 200),
-        CRGB::Black,
-        CRGB::Black,
-        CRGB::Black,
+        CHSV(hue_list[0], 255, (n > 0 ? 0 : 255)),
+        CHSV(hue_list[1], 255, (n > 1 ? 0 : 255)),
+        CHSV(hue_list[2], 255, (n > 2 ? 0 : 255)),
+        CHSV(hue_list[3], 255, (n > 3 ? 0 : 255)),
+        CHSV(hue_list[4], 255, (n > 4 ? 0 : 255)),
+        CHSV(hue_list[5], 255, (n > 5 ? 0 : 255)),
+        CHSV(hue_list[6], 255, (n > 6 ? 0 : 255)),
+        CHSV(hue_list[7], 255, (n > 7 ? 0 : 255)),
+        CHSV(hue_list[8], 255, (n > 8 ? 0 : 255)),
+        CHSV(hue_list[9], 255, (n > 9 ? 0 : 255)),
+        CHSV(hue_list[10], 255, (n > 10 ? 0 : 255)),
     };
 
     // Calculate current pattern based on tick
