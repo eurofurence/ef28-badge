@@ -32,5 +32,6 @@
 
 const char* toString(EFBoardPowerState state);
 const char* toString(EFTouchZone zone);
+const float wave_function(float x, float start, float end, float amplitude);
 
 #endif /* UTIL_H_ */

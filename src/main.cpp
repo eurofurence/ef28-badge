@@ -175,17 +175,6 @@ void batteryCheck() {
 }
 
 /**
- * @brief Calculates a wave animation. Used by bootupAnimation()
- */
-float wave_function(float x, float start, float end, float amplitude) {
-    if (x < start || x > end) {
-        return 0;
-    }
-    double normalized_x = (x - start) / (end - start) * M_PI;
-    return amplitude * std::sin(normalized_x);
-}
-
-/**
  * @brief Displays a fancy bootup animation
  */
 void boopupAnimation() {
@@ -268,6 +257,7 @@ void setup() {
 
     // Get FSM going
     fsm.resume();
+	
 }
 
 /**
@@ -345,4 +335,5 @@ void loop() {
         batteryCheck();
         task_battery = millis() + INTERVAL_BATTERY_CHECK;
     }
+	
 }

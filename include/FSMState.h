@@ -296,6 +296,47 @@ struct OTAUpdate : public FSMState {
 };
 
 /**
+ * @brief HuemeshGame
+ */
+struct GameHuemesh : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+	virtual void exit() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+	virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+	virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+	virtual std::unique_ptr<FSMState> touchEventNoseShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventNoseLongpress() override;
+	virtual std::unique_ptr<FSMState> touchEventNoseRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
+};
+
+
+/**
+ * @brief Displays matrix animation
+ */
+struct VUMeter : public FSMState {
+    uint32_t tick = 0;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
+};
+
+/**
  * @brief Menu entry point
  */
 struct MenuMain : public FSMState {

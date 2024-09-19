@@ -62,6 +62,8 @@ void FSM::resume() {
         case 2: this->transition(std::make_unique<AnimateMatrix>()); break;
         case 3: this->transition(std::make_unique<AnimateSnake>()); break;
         case 4: this->transition(std::make_unique<AnimateHeartbeat>()); break;
+		case 6: this->transition(std::make_unique<GameHuemesh>()); break;
+		case 7: this->transition(std::make_unique<VUMeter>()); break;
         default:
             LOGF_WARNING("(FSM) Failed to resume to unknown state: %d\r\n", this->globals->resumeStateIdx);
             this->transition(std::make_unique<DisplayPrideFlag>());
@@ -242,6 +244,8 @@ void FSM::persistGlobals() {
     LOGF_DEBUG("(FSM)  -> animMatrixIdx = %d\r\n", this->globals->animMatrixIdx);
     pref.putUInt("ledBrightPcent", this->globals->ledBrightnessPercent);
     LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
+	pref.putUInt("huemeshOwnHue", this->globals->huemeshOwnHue);
+    LOGF_DEBUG("(FSM)  -> huemeshOwnHue = %d\r\n", this->globals->huemeshOwnHue);
     pref.end();
 }
 
@@ -262,11 +266,13 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> animSnakeHueIdx = %d\r\n", this->globals->animSnakeHueIdx);
     this->globals->animHeartbeatHue = pref.getUInt("animHbHue", 0);
     LOGF_DEBUG("(FSM)  -> animHbHue = %d\r\n", this->globals->animHeartbeatHue);
-    this->globals->animHeartbeatSpeed= pref.getUInt("animHbSpeed", 1);
+    this->globals->animHeartbeatSpeed = pref.getUInt("animHbSpeed", 1);
     LOGF_DEBUG("(FSM)  -> animHbSpeed = %d\r\n", this->globals->animHeartbeatSpeed);
-    this->globals->animMatrixIdx= pref.getUInt("animMatrixIdx", 0);
+    this->globals->animMatrixIdx = pref.getUInt("animMatrixIdx", 0);
     LOGF_DEBUG("(FSM)  -> animMatrixIdx = %d\r\n", this->globals->animMatrixIdx);
-    this->globals->ledBrightnessPercent= pref.getUInt("ledBrightPcent", 40);
+    this->globals->ledBrightnessPercent = pref.getUInt("ledBrightPcent", 40);
     LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
+	this->globals->huemeshOwnHue = pref.getUInt("huemeshOwnHue", 0);
+    LOGF_DEBUG("(FSM)  -> huemeshOwnHue = %d\r\n", this->globals->huemeshOwnHue);
     pref.end();
 }
