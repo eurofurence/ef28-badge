@@ -75,7 +75,7 @@ void update_bar_to_reflect_consensus(){
 
 	int ledIndex = 0;
 	for (int i = 0; i < NUM_HUES; i++) {
-		int num_leds_for_color = (int)(((float)hue_consensus[i]*11)/total_sum);
+		int num_leds_for_color = (int)(((float)hue_consensus[i] * 11.0f) / (float)total_sum);
 		
 		for (int j = 0; j < num_leds_for_color && ledIndex < 11; j++) {
 			bar[ledIndex] = CHSV(rainbow[i], 255, 255);
