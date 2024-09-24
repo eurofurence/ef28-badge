@@ -36,14 +36,9 @@ You can find the full schematics and PCB files in the
 ![Technical drawing of the badge](docs/assets/techspecs.png)
 
 
-# Usage
+# Usage and features
 
-TODO
-
-
-## Default Firmware Features
-
-TODO
+See this page: [How to use your badge](https://www.eurofurence.org/EF28/badge/manual)
 
 
 ## Serial Output / Logging
@@ -59,6 +54,11 @@ example, the integrated serial monitor within VS Code (`CTRL + ALT + S`):
 
 You can also use your favorite serial monitor, for example [minicom](https://salsa.debian.org/minicom-team/minicom):
 `minicom -D /dev/ttyACM0 -b 115200`
+
+
+## Note on LED brightness
+
+You can configure the brightness of your badge, see the manual [How to use your badge](https://www.eurofurence.org/EF28/badge/manual). If you modify your firmware, do not push the LEDs too hard. We limited the brightness on purpose to around 45 of 255 since the 5V boot converter cannot handle more. If you use just one color channel, values up to 100/255 might work. But they are plenty bright at 45 of 255. Higher values cause the 5V rail to break down and the LEDs start flickering badly.
 
 
 # Building Your Own Firmware
