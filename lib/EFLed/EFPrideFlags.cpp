@@ -193,3 +193,30 @@ const CRGB EFPrideFlags::Intersex[] = {
     0xFED905,
     0xFED905,
 };
+
+const CRGB EFPrideFlags::Alterhuman[] = {
+    0x167A48,
+    0x167A48,
+    0x167A48,
+    0xFFFFFF,
+    0xFFFFFF,
+    0xFFFFFF,
+    0xFFFFFF,
+    0x593C90,
+    0x593C90,
+    0x593C90,
+};
+
+const CRGB EFPrideFlags::Lesbian[] = {
+    0xD52D00,
+    0xD52D00,
+    0xFF9A56,
+    0xFF9A56,
+    0xFFFFFF,
+    0xFFFFFF,
+    0xD362A4,
+    0xD362A4,
+    0xA30262,
+    0xA30262,
+    0xA30262,
+};
