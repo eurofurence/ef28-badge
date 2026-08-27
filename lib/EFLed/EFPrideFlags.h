@@ -3,8 +3,8 @@
 
 // MIT License
 //
-// Copyright 2024 Eurofurence e.V. 
-// 
+// Copyright 2024 Eurofurence e.V.
+//
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the “Software”),
 // to deal in the Software without restriction, including without limitation
@@ -34,20 +34,21 @@
  */
 class EFPrideFlags {
 
-    public:
-        const static CRGB LGBT[EFLED_EFBAR_NUM];
-        const static CRGB LGBTQI[EFLED_EFBAR_NUM];
-        const static CRGB Bisexual[EFLED_EFBAR_NUM];
-        const static CRGB Polyamorous[EFLED_EFBAR_NUM];
-        const static CRGB Polysexual[EFLED_EFBAR_NUM];
-        const static CRGB Transgender[EFLED_EFBAR_NUM];
-        const static CRGB Pansexual[EFLED_EFBAR_NUM];
-        const static CRGB Asexual[EFLED_EFBAR_NUM];
-        const static CRGB Genderfluid[EFLED_EFBAR_NUM];
-        const static CRGB Genderqueer[EFLED_EFBAR_NUM];
-        const static CRGB Nonbinary[EFLED_EFBAR_NUM];
-        const static CRGB Intersex[EFLED_EFBAR_NUM];
-
+public:
+    const static CRGB LGBT[EFLED_EFBAR_NUM];
+    const static CRGB LGBTQI[EFLED_EFBAR_NUM];
+    const static CRGB Bisexual[EFLED_EFBAR_NUM];
+    const static CRGB Polyamorous[EFLED_EFBAR_NUM];
+    const static CRGB Polysexual[EFLED_EFBAR_NUM];
+    const static CRGB Transgender[EFLED_EFBAR_NUM];
+    const static CRGB Pansexual[EFLED_EFBAR_NUM];
+    const static CRGB Asexual[EFLED_EFBAR_NUM];
+    const static CRGB Genderfluid[EFLED_EFBAR_NUM];
+    const static CRGB Genderqueer[EFLED_EFBAR_NUM];
+    const static CRGB Nonbinary[EFLED_EFBAR_NUM];
+    const static CRGB Intersex[EFLED_EFBAR_NUM];
+    const static CRGB Lesbian[EFLED_EFBAR_NUM];
+    const static CRGB Alterhuman[EFLED_EFBAR_NUM];
 };
 
 #endif /* EFPRIDEFLAGS_H_ */
