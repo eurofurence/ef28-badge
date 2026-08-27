@@ -54,7 +54,7 @@ void DisplayPrideFlag::run() {
         if (this->globals->prideFlagModeIdx == 0) {
             // Cycle through all flags
             LOGF_DEBUG("(DisplayPrideFlag) Switched pride flag to: %d\r\n", flagidx);
-            flagidx = (flagidx + 1) % 14;
+            flagidx = (flagidx + 1) % 12;
         }
     }
 
@@ -74,8 +74,6 @@ void DisplayPrideFlag::run() {
             case 9: prideFlag = EFPrideFlags::Genderqueer; break;
             case 10: prideFlag = EFPrideFlags::Nonbinary; break;
             case 11: prideFlag = EFPrideFlags::Intersex; break;
-            case 12: prideFlag = EFPrideFlags::Lesbian; break;
-            case 13: prideFlag = EFPrideFlags::Alterhuman; break;
         }
     } else {
         switch(this->globals->prideFlagModeIdx) {
@@ -92,8 +90,6 @@ void DisplayPrideFlag::run() {
             case 10: prideFlag = EFPrideFlags::Genderqueer; break;
             case 11: prideFlag = EFPrideFlags::Nonbinary; break;
             case 12: prideFlag = EFPrideFlags::Intersex; break;
-            case 13: prideFlag = EFPrideFlags::Lesbian; break;
-            case 14: prideFlag = EFPrideFlags::Alterhuman; break;
             default:
                 LOG_ERROR("(DisplayPrideFlag) Invalid prideFlagModeIdx!")
                 break;
@@ -144,7 +140,7 @@ std::unique_ptr<FSMState> DisplayPrideFlag::touchEventFingerprintRelease() {
         return nullptr;
     }
 
-    this->globals->prideFlagModeIdx = (this->globals->prideFlagModeIdx + 1) % 15;
+    this->globals->prideFlagModeIdx = (this->globals->prideFlagModeIdx + 1) % 13;
     this->is_globals_dirty = true;
     this->tick = 0;
 
