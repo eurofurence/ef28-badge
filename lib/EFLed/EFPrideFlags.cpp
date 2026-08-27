@@ -205,6 +205,7 @@ const CRGB EFPrideFlags::Alterhuman[] = {
     0x593C90,
     0x593C90,
     0x593C90,
+    0x593C90,
 };
 
 const CRGB EFPrideFlags::Lesbian[] = {
